@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "367695263568",
+    "project_id": "arrownet-301b8",
+    "storage_bucket": "arrownet-301b8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:367695263568:android:b2ffccf9bd1fb9468d1e55",
+        "android_client_info": {
+          "package_name": "com.arrowhead.arrownet"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "367695263568-h44vrceotmbq9sjc4s6nirjlvmbiaet4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAun5oRI-vel9D6ETr6RrCHiTF7cIqcZMg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "367695263568-h44vrceotmbq9sjc4s6nirjlvmbiaet4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

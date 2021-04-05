@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#146414"
+    tools:context=".MainActivity">
+
+    <com.hbb20.CountryCodePicker
+        android:id="@+id/ccp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="45dp"
+        app:ccp_defaultNameCode="US"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/title_textview"
+        tools:ignore="MissingConstraints" />
+
+    <EditText
+        android:id="@+id/phonenumber_textview"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerVertical="true"
+        android:hint="Phone Number"
+        android:inputType="phone"
+        android:singleLine="true"
+        app:layout_constraintBottom_toBottomOf="@+id/ccp"
+        app:layout_constraintStart_toEndOf="@+id/ccp"
+        app:layout_constraintTop_toTopOf="@+id/ccp"
+        tools:ignore="MissingConstraints" />
+
+    <TextView
+        android:id="@+id/title_textview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="50dp"
+        android:gravity="center_horizontal"
+        android:text="Register With Your Mobile Device"
+        android:textColor="#000000"
+        android:textSize="36sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="MissingConstraints" />
+
+    <Button
+        android:id="@+id/sendCodeButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:text="Send Verification Code"
+        app:backgroundTint="#053907"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/phonenumber_textview" />
+
+    <EditText
+        android:id="@+id/verificationCodeEntry"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:ems="10"
+        android:hint="Code"
+        android:inputType="number"
+        app:layout_constraintEnd_toEndOf="@+id/sendCodeButton"
+        app:layout_constraintStart_toStartOf="@+id/sendCodeButton"
+        app:layout_constraintTop_toBottomOf="@+id/sendCodeButton" />
+
+    <Button
+        android:id="@+id/codeConfirmButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25dp"
+        android:text="Confirm Code"
+        app:backgroundTint="#053907"
+        app:layout_constraintEnd_toEndOf="@+id/verificationCodeEntry"
+        app:layout_constraintStart_toStartOf="@+id/verificationCodeEntry"
+        app:layout_constraintTop_toBottomOf="@+id/verificationCodeEntry" />
+
+    <Button
+        android:id="@+id/resendCodeButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="Resend Code"
+        app:backgroundTint="#053907"
+        app:layout_constraintEnd_toEndOf="@+id/codeConfirmButton"
+        app:layout_constraintStart_toStartOf="@+id/codeConfirmButton"
+        app:layout_constraintTop_toBottomOf="@+id/codeConfirmButton" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
