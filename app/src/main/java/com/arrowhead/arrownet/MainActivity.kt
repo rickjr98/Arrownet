@@ -27,15 +27,19 @@ class MainActivity : AppCompatActivity() {
 
         auth = FirebaseAuth.getInstance()
         ccp.registerCarrierNumberEditText(phonenumber_textview)
+
         sendCodeButton.setOnClickListener() {
-            login()
+            number = ccp.fullNumberWithPlus
+            Toast.makeText(this, "Phone: $number", Toast.LENGTH_SHORT).show()
+            startPhoneNumberVerification(number)
         }
 
         resendCodeButton.setOnClickListener() {
-            //dembois
+            resendVerificationCode(number, resendToken)
         }
         codeConfirmButton.setOnClickListener() {
-            authenticate()
+            val code = verificationCodeEntry.text.toString()
+            verifyPhoneNumberWithCode(storedVerificationId, code)
         }
 
         callbacks = object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
@@ -63,46 +67,57 @@ class MainActivity : AppCompatActivity() {
         updateUI(currentUser)
     }
 
-    private fun login() {
-        number = findViewById<EditText>(R.id.phonenumber_textview).text.trim().toString()
-        var country = ccp.fullNumberWithPlus
-        number = country
-        if(number.isNotEmpty()) {
-            sendVerificationCode(number)
-            Toast.makeText(this, "Phone: $number", Toast.LENGTH_SHORT).show()
-        }
-        else {
-            Toast.makeText(this, "Enter a phone number", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun sendVerificationCode(number: String) {
+    private fun startPhoneNumberVerification(phoneNumber: String) {
+        // [START start_phone_auth]
         val options = PhoneAuthOptions.newBuilder(auth)
-            .setPhoneNumber(number)
-            .setTimeout(60L, TimeUnit.SECONDS)
-            .setActivity(this)
-            .setCallbacks(callbacks)
+            .setPhoneNumber(phoneNumber)       // Phone number to verify
+            .setTimeout(60L, TimeUnit.SECONDS) // Timeout and unit
+            .setActivity(this)                 // Activity (for callback binding)
+            .setCallbacks(callbacks)          // OnVerificationStateChangedCallbacks
             .build()
         PhoneAuthProvider.verifyPhoneNumber(options)
-        Toast.makeText(this, "Sent", Toast.LENGTH_SHORT).show()
-
+        // [END start_phone_auth]
     }
 
-    private fun signIn(credential: PhoneAuthCredential) {
+    private fun verifyPhoneNumberWithCode(verificationId: String?, code: String) {
+        // [START verify_with_code]
+        val credential = PhoneAuthProvider.getCredential(verificationId!!, code)
+        signInWithPhoneAuthCredential(credential)
+    }
+
+    // [START resend_verification]
+    private fun resendVerificationCode(
+        phoneNumber: String,
+        token: PhoneAuthProvider.ForceResendingToken?
+    ) {
+        val optionsBuilder = PhoneAuthOptions.newBuilder(auth)
+            .setPhoneNumber(phoneNumber)       // Phone number to verify
+            .setTimeout(60L, TimeUnit.SECONDS) // Timeout and unit
+            .setActivity(this)                 // Activity (for callback binding)
+            .setCallbacks(callbacks)          // OnVerificationStateChangedCallbacks
+        if (token != null) {
+            optionsBuilder.setForceResendingToken(token) // callback's ForceResendingToken
+        }
+        PhoneAuthProvider.verifyPhoneNumber(optionsBuilder.build())
+    }
+    // [END resend_verification]
+
+    // [START sign_in_with_phone]
+    private fun signInWithPhoneAuthCredential(credential: PhoneAuthCredential) {
         auth.signInWithCredential(credential)
-            .addOnCompleteListener {
-                task: Task<AuthResult> ->
-                if(task.isSuccessful) {
-                    Toast.makeText(this, "Logged in", Toast.LENGTH_SHORT).show()
-                    startActivity(Intent(this, HomePage::class.java))
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+                    // Sign in success, update UI with the signed-in user's information
+                    Toast.makeText(this, "Success", Toast.LENGTH_SHORT).show()
+                } else {
+                    // Sign in failed, display a message and update the UI
+                    Toast.makeText(this, "Failed", Toast.LENGTH_SHORT).show()
+                    if (task.exception is FirebaseAuthInvalidCredentialsException) {
+                        // The verification code entered was invalid
+                    }
+                    // Update UI
                 }
             }
-    }
-
-    private fun authenticate() {
-        val verifiNum = verificationCodeEntry.text.toString()
-        val credential: PhoneAuthCredential = PhoneAuthProvider.getCredential(storedVerificationId, verifiNum)
-        signIn(credential)
     }
 
     private fun updateUI(user: FirebaseUser? = auth.currentUser) {
