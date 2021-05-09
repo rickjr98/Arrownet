@@ -39,7 +39,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="150dp"
         android:gravity="center_horizontal"
         android:text="Register With Your Mobile Device"
         android:textColor="#000000"
@@ -59,39 +59,5 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/phonenumber_textview" />
-
-    <EditText
-        android:id="@+id/verificationCodeEntry"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="50dp"
-        android:ems="10"
-        android:hint="Code"
-        android:inputType="number"
-        app:layout_constraintEnd_toEndOf="@+id/sendCodeButton"
-        app:layout_constraintStart_toStartOf="@+id/sendCodeButton"
-        app:layout_constraintTop_toBottomOf="@+id/sendCodeButton" />
-
-    <Button
-        android:id="@+id/codeConfirmButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="25dp"
-        android:text="Confirm Code"
-        app:backgroundTint="#053907"
-        app:layout_constraintEnd_toEndOf="@+id/verificationCodeEntry"
-        app:layout_constraintStart_toStartOf="@+id/verificationCodeEntry"
-        app:layout_constraintTop_toBottomOf="@+id/verificationCodeEntry" />
-
-    <Button
-        android:id="@+id/resendCodeButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:text="Resend Code"
-        app:backgroundTint="#053907"
-        app:layout_constraintEnd_toEndOf="@+id/codeConfirmButton"
-        app:layout_constraintStart_toStartOf="@+id/codeConfirmButton"
-        app:layout_constraintTop_toBottomOf="@+id/codeConfirmButton" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
