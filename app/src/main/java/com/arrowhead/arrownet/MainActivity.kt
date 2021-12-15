@@ -23,6 +23,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var callbacks: PhoneAuthProvider.OnVerificationStateChangedCallbacks
     lateinit var resendToken: PhoneAuthProvider.ForceResendingToken
     lateinit var storedVerificationId: String
+    lateinit var phoneNumber: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,6 +59,7 @@ class MainActivity : AppCompatActivity() {
                 resendToken = token
                 Toast.makeText(applicationContext, "Code Sent...", Toast.LENGTH_SHORT).show()
                 var intent = Intent(applicationContext, VerifyActivity::class.java)
+                intent.putExtra("PhoneNumber", phoneNumber)
                 intent.putExtra("storedVerificationId", storedVerificationId)
                 startActivity(intent)
             }
@@ -66,7 +68,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun sendVerificationCode() {
         val number = findViewById<EditText>(R.id.phonenumber_textview)
-        var phoneNumber = number.text.toString().trim()
+        phoneNumber = number.text.toString().trim()
 
         if(phoneNumber.isNotEmpty()) {
             phoneNumber = ccp.fullNumberWithPlus

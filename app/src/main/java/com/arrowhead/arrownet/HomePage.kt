@@ -13,6 +13,15 @@ class HomePage : AppCompatActivity() {
         setContentView(R.layout.activity_home_page)
     }
 
+    private fun checkIfUserLoggedIn() {
+        val uid = FirebaseAuth.getInstance().uid
+        if(uid == null) {
+            val intent = Intent(this, MainActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(intent)
+        }
+    }
+
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         super.onCreateOptionsMenu(menu)
 
@@ -27,6 +36,13 @@ class HomePage : AppCompatActivity() {
                 FirebaseAuth.getInstance().signOut()
                 val intent = Intent(this, MainActivity::class.java)
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
+                startActivity(intent)
+                finish()
+                return true
+            }
+            R.id.settings_option ->
+            {
+                val intent = Intent(this, SettingsView::class.java)
                 startActivity(intent)
                 finish()
                 return true
