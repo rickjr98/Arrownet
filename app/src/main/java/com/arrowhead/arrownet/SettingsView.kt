@@ -19,12 +19,17 @@ class SettingsView : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings_view)
 
+        supportActionBar?.title = "Settings"
+
+        val name = NameEntry.toString()
+
         photo_button.setOnClickListener {
             pickFromGallery()
         }
 
         save_button.setOnClickListener {
             uploadImageToFirebase()
+            updateName(name)
         }
     }
 
@@ -61,5 +66,10 @@ class SettingsView : AppCompatActivity() {
                     Log.d("RegisterActivity","File Location: $it")
                 }
             }
+    }
+
+    private fun updateName(name: String) {
+        val ref = FirebaseDatabase.getInstance().getReference()
+        ref.setValue(name)
     }
 }

@@ -27,6 +27,7 @@
         android:layout_centerVertical="true"
         android:hint="Phone Number"
         android:inputType="phone"
+        android:minHeight="48dp"
         android:singleLine="true"
         app:layout_constraintBottom_toBottomOf="@+id/ccp"
         app:layout_constraintStart_toEndOf="@+id/ccp"

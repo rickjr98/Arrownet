@@ -6,11 +6,19 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.android.synthetic.main.activity_home_page.*
 
 class HomePage : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home_page)
+
+        checkIfUserLoggedIn()
+
+        newMessageButton.setOnClickListener {
+            val intent = Intent(this, NewMessageActivity::class.java)
+            startActivity(intent)
+        }
     }
 
     private fun checkIfUserLoggedIn() {
@@ -44,8 +52,6 @@ class HomePage : AppCompatActivity() {
             {
                 val intent = Intent(this, SettingsView::class.java)
                 startActivity(intent)
-                finish()
-                return true
             }
         }
         return false

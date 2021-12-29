@@ -9,9 +9,14 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Arrownet" >
-        <activity
-            android:name=".SettingsView"
-            android:exported="false" />
+        <activity android:name=".NewMessageActivity">
+            <meta-data android:name="android.support.PARENT_ACTIVITY"
+                android:value=".HomePage"/>
+        </activity>
+        <activity android:name=".SettingsView">
+            <meta-data android:name="android.support.PARENT_ACTIVITY"
+                android:value=".HomePage"/>
+        </activity>
         <activity android:name=".VerifyActivity" />
         <activity android:name=".HomePage" />
         <activity android:name=".MainActivity" >
