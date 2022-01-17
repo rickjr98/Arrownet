@@ -1,11 +1,18 @@
 package com.arrowhead.arrownet
 
+import android.app.Dialog
 import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.android.synthetic.main.activity_settings_view.*
 import java.util.*
@@ -15,13 +22,14 @@ class SettingsView : AppCompatActivity() {
         val IMAGE_REQUEST_CODE = 100
     }
 
+    private lateinit var database: DatabaseReference
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings_view)
+        database = Firebase.database.reference
 
         supportActionBar?.title = "Settings"
-
-        val name = NameEntry.toString()
 
         photo_button.setOnClickListener {
             pickFromGallery()
@@ -29,7 +37,6 @@ class SettingsView : AppCompatActivity() {
 
         save_button.setOnClickListener {
             uploadImageToFirebase()
-            updateName(name)
         }
     }
 
@@ -64,12 +71,16 @@ class SettingsView : AppCompatActivity() {
 
                 ref.downloadUrl.addOnSuccessListener {
                     Log.d("RegisterActivity","File Location: $it")
+
+                    updateInfo(it.toString())
                 }
             }
     }
 
-    private fun updateName(name: String) {
-        val ref = FirebaseDatabase.getInstance().getReference()
-        ref.setValue(name)
+    private fun updateInfo(profileImageUrl: String) {
+        val user = Firebase.auth.currentUser
+        val uid = user.uid
+        database.child("users").child(uid).child("name").setValue(NameEntry.text.toString())
+        database.child("users").child(uid).child("profileImageUrl").setValue(profileImageUrl)
     }
 }
