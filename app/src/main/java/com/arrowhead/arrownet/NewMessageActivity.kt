@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.ContactsContract
 import androidx.core.app.ActivityCompat
-import androidx.recyclerview.widget.RecyclerView
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.activity_new_message.*
@@ -29,6 +28,8 @@ class NewMessageActivity : AppCompatActivity() {
         }
 
         val adapter = GroupAdapter<ViewHolder>()
+
+        //adapter.add()
 
         recyclerview_newmessage.adapter = adapter
     }

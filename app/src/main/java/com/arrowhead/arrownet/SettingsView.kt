@@ -1,19 +1,15 @@
 package com.arrowhead.arrownet
 
-import android.app.Dialog
 import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ktx.database
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.database.*
 import com.google.firebase.storage.FirebaseStorage
+import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_settings_view.*
 import java.util.*
 
@@ -22,14 +18,24 @@ class SettingsView : AppCompatActivity() {
         val IMAGE_REQUEST_CODE = 100
     }
 
-    private lateinit var database: DatabaseReference
+    private lateinit var auth: FirebaseAuth
+    private lateinit var mDatabase: DatabaseReference
+    private lateinit var userName: String
+    private lateinit var user: User
+    private lateinit var uid: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings_view)
-        database = Firebase.database.reference
 
         supportActionBar?.title = "Settings"
+
+        auth = FirebaseAuth.getInstance()
+        uid = auth.currentUser?.uid.toString()
+
+        mDatabase = FirebaseDatabase.getInstance().getReference("users").child(uid)
+
+        getInfo()
 
         photo_button.setOnClickListener {
             pickFromGallery()
@@ -37,6 +43,8 @@ class SettingsView : AppCompatActivity() {
 
         save_button.setOnClickListener {
             uploadImageToFirebase()
+            uploadName()
+            Toast.makeText(applicationContext, "User Profile Updated", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -71,16 +79,29 @@ class SettingsView : AppCompatActivity() {
 
                 ref.downloadUrl.addOnSuccessListener {
                     Log.d("RegisterActivity","File Location: $it")
-
-                    updateInfo(it.toString())
+                    mDatabase.child("photoUrl").setValue(it.toString())
                 }
             }
     }
 
-    private fun updateInfo(profileImageUrl: String) {
-        val user = Firebase.auth.currentUser
-        val uid = user.uid
-        database.child("users").child(uid).child("name").setValue(NameEntry.text.toString())
-        database.child("users").child(uid).child("profileImageUrl").setValue(profileImageUrl)
+    private fun uploadName() {
+        userName = NameEntry.text.toString()
+        mDatabase.child("userName").setValue(userName)
+    }
+
+    private fun getInfo() {
+        mDatabase.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                user = snapshot.getValue(User::class.java)!!
+                NameEntry.setText(user.userName)
+                val uri = user.photoUrl
+                Picasso.with(applicationContext).load(uri).into(photo_button)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(applicationContext, "Failed to update", Toast.LENGTH_SHORT).show()
+            }
+
+        })
     }
 }

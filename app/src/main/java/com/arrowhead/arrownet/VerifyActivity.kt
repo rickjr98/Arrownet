@@ -61,9 +61,11 @@ class VerifyActivity : AppCompatActivity() {
     private fun newUser(phoneNumber: String) {
         val uid = FirebaseAuth.getInstance().uid ?: ""
         val ref = FirebaseDatabase.getInstance().getReference("/users/$uid")
-        val user = User(uid, phoneNumber)
+        val user = User(uid, phoneNumber, "", "")
         ref.setValue(user)
     }
 }
 
-class User(val uid: String, val phoneNumber: String)
+class User(val uid: String, val phoneNumber: String, val userName: String, val photoUrl: String) {
+    constructor() : this("", "", "", "")
+}
