@@ -12,11 +12,11 @@ import kotlinx.android.synthetic.main.activity_main.*
 import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
-    lateinit var auth: FirebaseAuth
-    lateinit var callbacks: PhoneAuthProvider.OnVerificationStateChangedCallbacks
-    lateinit var resendToken: PhoneAuthProvider.ForceResendingToken
-    lateinit var storedVerificationId: String
-    lateinit var phoneNumber: String
+    private lateinit var auth: FirebaseAuth
+    private lateinit var callbacks: PhoneAuthProvider.OnVerificationStateChangedCallbacks
+    private lateinit var resendToken: PhoneAuthProvider.ForceResendingToken
+    private lateinit var storedVerificationId: String
+    private lateinit var phoneNumber: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

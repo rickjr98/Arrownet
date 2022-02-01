@@ -44,6 +44,7 @@ class SettingsView : AppCompatActivity() {
         save_button.setOnClickListener {
             uploadImageToFirebase()
             uploadName()
+            finish()
             Toast.makeText(applicationContext, "User Profile Updated", Toast.LENGTH_SHORT).show()
         }
     }
@@ -90,12 +91,18 @@ class SettingsView : AppCompatActivity() {
     }
 
     private fun getInfo() {
-        mDatabase.addValueEventListener(object : ValueEventListener {
+        mDatabase.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 user = snapshot.getValue(User::class.java)!!
                 NameEntry.setText(user.userName)
-                val uri = user.photoUrl
-                Picasso.with(applicationContext).load(uri).into(photo_button)
+                var uri = user.photoUrl
+                if(uri == "") {
+                    uri = Uri.parse("android.resource://com.arrowhead.arrownet/" + R.drawable.blank_profile).toString()
+                    Picasso.with(applicationContext).load(uri).into(photo_button)
+                }
+                else {
+                    Picasso.with(applicationContext).load(uri).into(photo_button)
+                }
             }
 
             override fun onCancelled(error: DatabaseError) {
