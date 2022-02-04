@@ -11,8 +11,8 @@
         android:layout_height="35dp"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
-        android:layout_marginTop="8dp"
         android:src="@drawable/blank_profile"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -24,9 +24,12 @@
         android:layout_marginLeft="8dp"
         android:background="@drawable/rounded_from_edge"
         android:maxWidth="240dp"
+        android:paddingLeft="32dp"
+        android:paddingTop="10dp"
+        android:paddingRight="16dp"
+        android:paddingBottom="10dp"
         android:text="TextView"
         android:textColor="#FFFFFF"
-        android:padding="16dp"
         app:layout_constraintStart_toEndOf="@+id/userFromImage"
         app:layout_constraintTop_toTopOf="@+id/userFromImage" />
 </androidx.constraintlayout.widget.ConstraintLayout>
