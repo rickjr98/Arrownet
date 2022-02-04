@@ -1,8 +1,10 @@
 package com.arrowhead.arrownet
 
 import android.content.Intent
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Parcelable
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
@@ -11,6 +13,7 @@ import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.PhoneAuthCredential
 import com.google.firebase.auth.PhoneAuthProvider
 import com.google.firebase.database.FirebaseDatabase
+import kotlinx.android.parcel.Parcelize
 
 class VerifyActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
@@ -61,11 +64,13 @@ class VerifyActivity : AppCompatActivity() {
     private fun newUser(phoneNumber: String) {
         val uid = FirebaseAuth.getInstance().uid ?: ""
         val ref = FirebaseDatabase.getInstance().getReference("/users/$uid")
-        val user = User(uid, phoneNumber, "", "")
+        val uri = Uri.parse("android.resource://com.arrowhead.arrownet/" + R.drawable.blank_profile).toString()
+        val user = User(uid, phoneNumber, "", uri)
         ref.setValue(user)
     }
 }
 
-class User(val uid: String, val phoneNumber: String, val userName: String, val photoUrl: String) {
+@Parcelize
+class User(val uid: String, val phoneNumber: String, val userName: String, val photoUrl: String): Parcelable {
     constructor() : this("", "", "", "")
 }

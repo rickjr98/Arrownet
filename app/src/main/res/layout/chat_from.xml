@@ -6,28 +6,27 @@
     android:layout_height="wrap_content">
 
     <de.hdodenhof.circleimageview.CircleImageView
-        android:id="@+id/userPicture"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
+        android:id="@+id/userFromImage"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
         android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
         android:src="@drawable/blank_profile"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/destinationUser"
-        android:layout_width="0dp"
+        android:id="@+id/userFromText"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginLeft="16dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:background="@drawable/rounded_from_edge"
+        android:maxWidth="240dp"
         android:text="TextView"
-        android:textColor="#000000"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/userPicture"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:textColor="#FFFFFF"
+        android:padding="16dp"
+        app:layout_constraintStart_toEndOf="@+id/userFromImage"
+        app:layout_constraintTop_toTopOf="@+id/userFromImage" />
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -98,10 +98,10 @@ class SettingsView : AppCompatActivity() {
                 var uri = user.photoUrl
                 if(uri == "") {
                     uri = Uri.parse("android.resource://com.arrowhead.arrownet/" + R.drawable.blank_profile).toString()
-                    Picasso.with(applicationContext).load(uri).into(photo_button)
+                    Picasso.get().load(uri).into(photo_button)
                 }
                 else {
-                    Picasso.with(applicationContext).load(uri).into(photo_button)
+                    Picasso.get().load(uri).into(photo_button)
                 }
             }
 
