@@ -65,12 +65,13 @@ class VerifyActivity : AppCompatActivity() {
         val uid = FirebaseAuth.getInstance().uid ?: ""
         val ref = FirebaseDatabase.getInstance().getReference("/users/$uid")
         val uri = Uri.parse("android.resource://com.arrowhead.arrownet/" + R.drawable.blank_profile).toString()
-        val user = User(uid, phoneNumber, "", uri)
+        val flagUri = Uri.parse("android.resource://com.arrowhead.arrownet/" + R.drawable.blank_profile).toString()
+        val user = User(uid, phoneNumber, "", uri, "", flagUri, "0")
         ref.setValue(user)
     }
 }
 
 @Parcelize
-class User(val uid: String, val phoneNumber: String, val userName: String, val photoUrl: String): Parcelable {
-    constructor() : this("", "", "", "")
+class User(val uid: String, val phoneNumber: String, val userName: String, val photoUrl: String, val languageID: String, val flagUrl: String, val spot: String): Parcelable {
+    constructor() : this("", "", "", "", "", "", "")
 }

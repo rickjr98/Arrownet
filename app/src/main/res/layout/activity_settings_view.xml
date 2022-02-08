@@ -35,10 +35,23 @@
         android:id="@+id/save_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="32dp"
         android:text="Save"
+        app:layout_constraintEnd_toEndOf="@+id/language_selection"
+        app:layout_constraintHorizontal_bias="0.495"
+        app:layout_constraintStart_toStartOf="@+id/language_selection"
+        app:layout_constraintTop_toBottomOf="@+id/language_selection" />
+
+    <Spinner
+        android:id="@+id/language_selection"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:dropDownWidth="320dp"
+        android:minHeight="48dp"
         app:layout_constraintEnd_toEndOf="@+id/NameEntry"
         app:layout_constraintStart_toStartOf="@+id/NameEntry"
-        app:layout_constraintTop_toBottomOf="@+id/NameEntry" />
+        app:layout_constraintTop_toBottomOf="@+id/NameEntry"
+        tools:ignore="SpeakableTextPresentCheck" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

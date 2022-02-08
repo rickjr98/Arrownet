@@ -69,7 +69,7 @@ class HomePage : AppCompatActivity() {
             ref.addListenerForSingleValueEvent(object: ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     chatPartnerUser = snapshot.getValue(User::class.java)
-                    name = chatMessage.contactName
+                    name = chatPartnerUser?.userName
                     viewHolder.itemView.latest_message_username.text = name
 
                     val targetImage = viewHolder.itemView.latest_message_user_picture

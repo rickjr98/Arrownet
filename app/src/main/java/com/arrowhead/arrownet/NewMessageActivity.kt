@@ -99,7 +99,6 @@ class NewMessageActivity : AppCompatActivity() {
 }
 
 class UserItem(val user: User, val displayName: String): Item<ViewHolder>() {
-    constructor() : this(User("", "", "", ""), "")
     override fun bind(viewHolder: ViewHolder, position: Int) {
         viewHolder.itemView.destinationUser.text = displayName
         Picasso.get().load(user.photoUrl).into(viewHolder.itemView.userPicture)

@@ -2,6 +2,8 @@ package com.arrowhead.arrownet
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.firebase.auth.FirebaseAuth
@@ -46,15 +48,31 @@ class ChatLogActivity : AppCompatActivity() {
         }
     }
 
-    class ChatMessage(val id: String, val text: String, val fromID: String, val toID: String, val timestamp: Long, val contactName: String) {
-        constructor() : this("", "", "", "", -1, "")
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        super.onCreateOptionsMenu(menu)
+
+        menuInflater.inflate(R.menu.chat_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when(item.itemId) {
+            R.id.translate ->
+            {
+                return false
+            }
+        }
+        return false
+    }
+
+    class ChatMessage(val id: String, val text: String, val fromID: String, val toID: String, val timestamp: Long) {
+        constructor() : this("", "", "", "", -1)
     }
 
     private fun sendMessage() {
         val text = newMessageText.text.toString()
         val fromID = FirebaseAuth.getInstance().uid
         val user = intent.getParcelableExtra<User>(NewMessageActivity.USER_KEY)
-        val contactName = intent.getStringExtra(NewMessageActivity.NAME_KEY).toString()
         val toID = user!!.uid
 
         if(fromID == null) {
@@ -64,12 +82,13 @@ class ChatLogActivity : AppCompatActivity() {
         val reference = FirebaseDatabase.getInstance().getReference("messages/$fromID/$toID").push()
         val toReference = FirebaseDatabase.getInstance().getReference("messages/$toID/$fromID").push()
 
-        val chatMessage = ChatMessage(reference.key!!, text, fromID, toID, System.currentTimeMillis() / 1000, contactName!!)
+        val chatMessage = ChatMessage(reference.key!!, text, fromID, toID, System.currentTimeMillis() / 1000)
         reference.setValue(chatMessage).addOnSuccessListener {
             newMessageText.text.clear()
             recyclerview_chat.scrollToPosition(adapter.itemCount - 1)
         }
         toReference.setValue(chatMessage)
+
         val latestMessageRef = FirebaseDatabase.getInstance().getReference("latest-messages/$fromID/$toID")
         latestMessageRef.setValue(chatMessage)
 
@@ -123,7 +142,7 @@ class ChatFromItem(val text: String, private val user: User): Item<ViewHolder>()
     override fun bind(viewHolder: ViewHolder, position: Int) {
         viewHolder.itemView.userFromText.text = text
 
-        val uri = user.photoUrl
+        val uri = user.flagUrl
         val image = viewHolder.itemView.userFromImage
         Picasso.get().load(uri).into(image)
     }
@@ -137,7 +156,7 @@ class ChatToItem(val text: String, private val user: User): Item<ViewHolder>() {
     override fun bind(viewHolder: ViewHolder, position: Int) {
         viewHolder.itemView.userToText.text = text
 
-        val uri = user.photoUrl
+        val uri = user.flagUrl
         val image = viewHolder.itemView.userToImage
         Picasso.get().load(uri).into(image)
     }
