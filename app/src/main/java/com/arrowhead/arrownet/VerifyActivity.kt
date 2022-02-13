@@ -47,7 +47,7 @@ class VerifyActivity : AppCompatActivity() {
         auth.signInWithCredential(credential)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
-                    val intent = Intent(this , MainActivity::class.java)
+                    val intent = Intent(this , HomePage::class.java)
                     if (phoneNumber != null) {
                         newUser(phoneNumber)
                     }

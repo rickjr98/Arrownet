@@ -1,12 +1,16 @@
 package com.arrowhead.arrownet
 
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.database.Cursor
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.ContactsContract
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
+import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.DividerItemDecoration
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.UserInfo
@@ -22,7 +26,10 @@ import kotlinx.android.synthetic.main.latest_message_row.view.*
 class HomePage : AppCompatActivity() {
     companion object {
         var currentUser: User? = null
+        val USER_KEY = "USER_KEY"
+        val NAME_KEY = "NAME_KEY"
     }
+
     val latestMessagesMap = HashMap<String, ChatLogActivity.ChatMessage>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,18 +39,18 @@ class HomePage : AppCompatActivity() {
         recyclerview_latest_message.adapter = adapter
         recyclerview_latest_message.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL))
 
-        adapter.setOnItemClickListener { item, view ->
-            val intent = Intent(this, ChatLogActivity::class.java)
-            val row = item as LatestMessageRow
-            intent.putExtra(NewMessageActivity.USER_KEY, row.chatPartnerUser)
-            intent.putExtra(NewMessageActivity.NAME_KEY, row.name)
-            startActivity(intent)
-        }
-
         listenForLatestMessages()
 
         retrieveCurrentUser()
         checkIfUserLoggedIn()
+
+        adapter.setOnItemClickListener { item, view ->
+            val intent = Intent(this, ChatLogActivity::class.java)
+            val row = item as LatestMessageRow
+            intent.putExtra(NewMessageActivity.USER_KEY, row.chatPartnerUser)
+            intent.putExtra(NewMessageActivity.NAME_KEY, row.chatPartnerUser?.userName)
+            startActivity(intent)
+        }
 
         newMessageButton.setOnClickListener {
             val intent = Intent(this, NewMessageActivity::class.java)
@@ -51,9 +58,8 @@ class HomePage : AppCompatActivity() {
         }
     }
 
-    class LatestMessageRow(val chatMessage: ChatLogActivity.ChatMessage): Item<ViewHolder>() {
+    class LatestMessageRow(private val chatMessage: ChatLogActivity.ChatMessage): Item<ViewHolder>() {
         var chatPartnerUser: User? = null
-        var name: String? = null
         override fun bind(viewHolder: ViewHolder, position: Int) {
             viewHolder.itemView.latest_message_text.text = chatMessage.text
 
@@ -69,8 +75,7 @@ class HomePage : AppCompatActivity() {
             ref.addListenerForSingleValueEvent(object: ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     chatPartnerUser = snapshot.getValue(User::class.java)
-                    name = chatPartnerUser?.userName
-                    viewHolder.itemView.latest_message_username.text = name
+                    viewHolder.itemView.latest_message_username.text = chatPartnerUser?.userName
 
                     val targetImage = viewHolder.itemView.latest_message_user_picture
                     Picasso.get().load(chatPartnerUser?.photoUrl).into(targetImage)

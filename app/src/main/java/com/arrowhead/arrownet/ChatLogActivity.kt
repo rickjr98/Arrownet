@@ -29,8 +29,14 @@ class ChatLogActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat_log)
 
-        val name = intent.getStringExtra(NewMessageActivity.NAME_KEY)
+        var name = intent.getStringExtra(NewMessageActivity.NAME_KEY)
+        if(name == null) {
+            name = intent.getStringExtra(HomePage.NAME_KEY)
+        }
         toUser = intent.getParcelableExtra<User>(NewMessageActivity.USER_KEY)
+        if(toUser == null) {
+            toUser = intent.getParcelableExtra<User>(HomePage.USER_KEY)
+        }
 
         recyclerview_chat.adapter = adapter
 

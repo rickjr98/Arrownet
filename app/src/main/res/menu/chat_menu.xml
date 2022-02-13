@@ -6,6 +6,7 @@
         android:id="@+id/translate"
         android:icon="@drawable/translate_button"
         android:title=""
-        app:showAsAction="always" />
+        app:showAsAction="always"
+        app:actionViewClass="android.widget.Switch" />
 
 </menu>

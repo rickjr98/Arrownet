@@ -25,13 +25,7 @@ class MainActivity : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
         ccp.registerCarrierNumberEditText(phonenumber_textview)
 
-        var sendButton = findViewById<Button>(R.id.sendCodeButton)
-
-        var currentUser = auth.currentUser
-        if(currentUser != null) {
-            startActivity(Intent(applicationContext, HomePage::class.java))
-            finish()
-        }
+        val sendButton = findViewById<Button>(R.id.sendCodeButton)
 
         sendButton.setOnClickListener() {
             sendVerificationCode()
@@ -39,7 +33,7 @@ class MainActivity : AppCompatActivity() {
 
         callbacks = object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
             override fun onVerificationCompleted(credential: PhoneAuthCredential) {
-                startActivity(Intent(applicationContext, SettingsView::class.java))
+                startActivity(Intent(applicationContext, HomePage::class.java))
                 finish()
             }
 
@@ -51,11 +45,20 @@ class MainActivity : AppCompatActivity() {
                 storedVerificationId = verificationId
                 resendToken = token
                 Toast.makeText(applicationContext, "Code Sent...", Toast.LENGTH_SHORT).show()
-                var intent = Intent(applicationContext, VerifyActivity::class.java)
+                val intent = Intent(applicationContext, VerifyActivity::class.java)
                 intent.putExtra("PhoneNumber", phoneNumber)
                 intent.putExtra("storedVerificationId", storedVerificationId)
                 startActivity(intent)
             }
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val currentUser = auth.currentUser
+        if(currentUser != null) {
+            startActivity(Intent(applicationContext, HomePage::class.java))
+            finish()
         }
     }
 
@@ -65,7 +68,7 @@ class MainActivity : AppCompatActivity() {
 
         if(phoneNumber.isNotEmpty()) {
             phoneNumber = ccp.fullNumberWithPlus
-            Toast.makeText(this, "$phoneNumber", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, phoneNumber, Toast.LENGTH_SHORT).show()
             startPhoneNumberVerification(phoneNumber)
         }
         else {
