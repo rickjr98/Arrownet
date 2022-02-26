@@ -1,12 +1,8 @@
 package com.arrowhead.arrownet
 
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.database.Cursor
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.provider.ContactsContract
-import androidx.core.app.ActivityCompat
+import android.view.*
 import androidx.recyclerview.widget.DividerItemDecoration
 import com.google.firebase.database.*
 import com.squareup.picasso.Picasso
@@ -14,32 +10,46 @@ import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.activity_group_chat.*
-import kotlinx.android.synthetic.main.activity_new_message.*
 import kotlinx.android.synthetic.main.user_row.view.*
 
-class NewMessageActivity : AppCompatActivity() {
+class GroupChatActivity : AppCompatActivity() {
     private var contactsList = HashMap<String, String>()
     private lateinit var mDatabase: DatabaseReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_new_message)
+        setContentView(R.layout.activity_group_chat)
 
-        supportActionBar?.title = "Select a User"
+        supportActionBar?.title = "Select Users"
 
         mDatabase = FirebaseDatabase.getInstance().getReference("users")
 
         contactsList = intent.getSerializableExtra("ContactsList") as HashMap<String, String>
 
-        selectNewUser()
+        selectGroupUsers()
     }
 
-    companion object {
-        val USER_KEY = "USER_KEY"
-        val NAME_KEY = "NAME_KEY"
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        super.onCreateOptionsMenu(menu)
+
+        menuInflater.inflate(R.menu.group_chat_menu, menu)
+        return true
     }
 
-    private fun selectNewUser() {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when(item.itemId) {
+            R.id.new_group_button ->
+            {
+                //val intent = Intent(applicationContext, ChatLogActivity::class.java)
+                //intent.putExtra(USER_LIST, list)
+                //startActivity(intent)
+                //finish()
+            }
+        }
+        return false
+    }
+
+    private fun selectGroupUsers() {
         mDatabase.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val adapter = GroupAdapter<ViewHolder>()
@@ -49,21 +59,23 @@ class NewMessageActivity : AppCompatActivity() {
                     val number = user?.phoneNumber.toString()
                     if (user != null) {
                         if(contactsList.containsKey(number)) {
-                            val contactName = contactsList.get(number).toString()
-                            adapter.add(UserItem(user, contactName))
+                            val contactName = contactsList[number].toString()
+                            adapter.add(GroupUserItem(user, contactName))
                         }
                     }
 
                     adapter.setOnItemClickListener { item, view ->
-                        val userItem = item as UserItem
-                        val intent = Intent(view.context, ChatLogActivity::class.java)
-                        intent.putExtra(USER_KEY, userItem.user)
-                        intent.putExtra(NAME_KEY, userItem.displayName)
-                        startActivity(intent)
-                        finish()
+                        val userItem = item as GroupUserItem
+                        userItem.isSelected = !userItem.isSelected
+                        if(userItem.isSelected) {
+                            view.isSelectedImage.visibility = View.VISIBLE
+                        }
+                        else {
+                            view.isSelectedImage.visibility = View.INVISIBLE
+                        }
                     }
-                    recyclerview_newmessage.adapter = adapter
-                    recyclerview_newmessage.addItemDecoration(DividerItemDecoration(applicationContext, DividerItemDecoration.VERTICAL))
+                    group_recycler.adapter = adapter
+                    group_recycler.addItemDecoration(DividerItemDecoration(applicationContext, DividerItemDecoration.VERTICAL))
                 }
             }
 
@@ -74,7 +86,9 @@ class NewMessageActivity : AppCompatActivity() {
     }
 }
 
-class UserItem(val user: User, val displayName: String): Item<ViewHolder>() {
+class GroupUserItem(val user: User, val displayName: String): Item<ViewHolder>() {
+    var isSelected: Boolean = false
+
     override fun bind(viewHolder: ViewHolder, position: Int) {
         viewHolder.itemView.destinationUser.text = displayName
         Picasso.get().load(user.photoUrl).into(viewHolder.itemView.userPicture)

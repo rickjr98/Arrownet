@@ -31,6 +31,7 @@ class HomePage : AppCompatActivity() {
     }
 
     val latestMessagesMap = HashMap<String, ChatLogActivity.ChatMessage>()
+    private val contactsList = HashMap<String, String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,6 +45,13 @@ class HomePage : AppCompatActivity() {
         retrieveCurrentUser()
         checkIfUserLoggedIn()
 
+        if(ActivityCompat.checkSelfPermission(this, android.Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, Array(1) {android.Manifest.permission.READ_CONTACTS}, 111)
+        }
+        else {
+            readContacts()
+        }
+
         adapter.setOnItemClickListener { item, view ->
             val intent = Intent(this, ChatLogActivity::class.java)
             val row = item as LatestMessageRow
@@ -54,7 +62,25 @@ class HomePage : AppCompatActivity() {
 
         newMessageButton.setOnClickListener {
             val intent = Intent(this, NewMessageActivity::class.java)
+            intent.putExtra("ContactsList", contactsList)
             startActivity(intent)
+        }
+
+        newGroupButton.setOnClickListener {
+            val intent = Intent(this, GroupChatActivity::class.java)
+            intent.putExtra("ContactsList", contactsList)
+            startActivity(intent)
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if(requestCode == 111 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            readContacts()
         }
     }
 
@@ -132,7 +158,7 @@ class HomePage : AppCompatActivity() {
         })
     }
 
-    val adapter = GroupAdapter<ViewHolder>()
+    private val adapter = GroupAdapter<ViewHolder>()
 
     private fun retrieveCurrentUser() {
         val uid = FirebaseAuth.getInstance().uid
@@ -183,5 +209,28 @@ class HomePage : AppCompatActivity() {
             }
         }
         return false
+    }
+
+    private fun readContacts() {
+        val phoneCursor: Cursor? = applicationContext.contentResolver.query(
+            ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+            null,
+            null,
+            null,
+            null
+        )
+        if (phoneCursor != null && phoneCursor.count > 0) {
+            val contactName =
+                phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)
+            val numberIndex =
+                phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
+            while (phoneCursor.moveToNext()) {
+                var number: String = phoneCursor.getString(numberIndex)
+                val name: String = phoneCursor.getString(contactName)
+                number = number.replace("[\\s-]".toRegex(), "")
+                contactsList[number] = name
+            }
+            phoneCursor.close()
+        }
     }
 }

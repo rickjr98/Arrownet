@@ -22,6 +22,20 @@
         tools:ignore="SpeakableTextPresentCheck"
         android:contentDescription="TODO" />
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/newGroupButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/group_image"
+        app:backgroundTint="#0E750E"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/recyclerview_latest_message"
+        app:layout_constraintHorizontal_bias="0.02"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.98"
+        tools:ignore="SpeakableTextPresentCheck" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerview_latest_message"
         android:layout_width="0dp"

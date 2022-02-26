@@ -15,7 +15,7 @@ android {
 
     defaultConfig {
         applicationId "com.arrowhead.arrownet"
-        minSdkVersion 16
+        minSdkVersion 19
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"
@@ -69,6 +69,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-core:17.3.0'
     implementation 'com.google.firebase:firebase-ml-natural-language:22.0.0'
     implementation 'com.google.firebase:firebase-ml-natural-language-translate-model:20.0.8'
+    implementation 'com.google.mlkit:language-id:17.0.3'
 }
 
 apply plugin: 'com.google.gms.google-services'
