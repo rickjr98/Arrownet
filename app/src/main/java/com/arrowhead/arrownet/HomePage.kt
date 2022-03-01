@@ -8,14 +8,10 @@ import android.os.Bundle
 import android.provider.ContactsContract
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
-import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.DividerItemDecoration
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.UserInfo
 import com.google.firebase.database.*
-import com.google.firebase.ktx.Firebase
 import com.squareup.picasso.Picasso
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
@@ -84,7 +80,7 @@ class HomePage : AppCompatActivity() {
         }
     }
 
-    class LatestMessageRow(private val chatMessage: ChatLogActivity.ChatMessage): Item<ViewHolder>() {
+    class LatestMessageRow(private val chatMessage: ChatLogActivity.ChatMessage, private val contacts: HashMap<String, String>): Item<ViewHolder>() {
         var chatPartnerUser: User? = null
         override fun bind(viewHolder: ViewHolder, position: Int) {
             viewHolder.itemView.latest_message_text.text = chatMessage.text
@@ -101,7 +97,13 @@ class HomePage : AppCompatActivity() {
             ref.addListenerForSingleValueEvent(object: ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     chatPartnerUser = snapshot.getValue(User::class.java)
-                    viewHolder.itemView.latest_message_username.text = chatPartnerUser?.userName
+                    val number = chatPartnerUser?.phoneNumber.toString()
+                    if(contacts.containsKey(number)) {
+                        viewHolder.itemView.latest_message_username.text = contacts[number].toString()
+                    }
+                    else {
+                        viewHolder.itemView.latest_message_username.text = chatPartnerUser?.userName
+                    }
 
                     val targetImage = viewHolder.itemView.latest_message_user_picture
                     Picasso.get().load(chatPartnerUser?.photoUrl).into(targetImage)
@@ -123,7 +125,7 @@ class HomePage : AppCompatActivity() {
     private fun refreshMessages() {
         adapter.clear()
         latestMessagesMap.values.forEach {
-            adapter.add(LatestMessageRow(it))
+            adapter.add(LatestMessageRow(it, contactsList))
         }
     }
 

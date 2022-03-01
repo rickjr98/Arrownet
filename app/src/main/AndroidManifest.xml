@@ -11,6 +11,17 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Arrownet">
+        <activity
+            android:name=".GroupChatLogActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".HomePage" />
+        </activity>
+        <activity android:name=".NewGroupActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".GroupChatActivity" />
+        </activity>
         <activity android:name=".GroupChatActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

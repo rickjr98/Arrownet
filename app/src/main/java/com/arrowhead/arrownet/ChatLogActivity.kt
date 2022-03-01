@@ -65,6 +65,11 @@ class ChatLogActivity : AppCompatActivity() {
             {
                 return false
             }
+            R.id.home ->
+            {
+                finish()
+                return true
+            }
         }
         return false
     }

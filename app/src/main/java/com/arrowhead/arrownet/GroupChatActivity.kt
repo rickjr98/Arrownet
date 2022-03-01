@@ -1,8 +1,11 @@
 package com.arrowhead.arrownet
 
+import android.app.Activity
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.*
+import android.widget.Toast
 import androidx.recyclerview.widget.DividerItemDecoration
 import com.google.firebase.database.*
 import com.squareup.picasso.Picasso
@@ -15,6 +18,7 @@ import kotlinx.android.synthetic.main.user_row.view.*
 class GroupChatActivity : AppCompatActivity() {
     private var contactsList = HashMap<String, String>()
     private lateinit var mDatabase: DatabaseReference
+    private var userList: ArrayList<User> = arrayListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,10 +44,15 @@ class GroupChatActivity : AppCompatActivity() {
         when(item.itemId) {
             R.id.new_group_button ->
             {
-                //val intent = Intent(applicationContext, ChatLogActivity::class.java)
-                //intent.putExtra(USER_LIST, list)
-                //startActivity(intent)
-                //finish()
+                if(userList.size == 0) {
+                    Toast.makeText(applicationContext, "Please Select at least 1 user", Toast.LENGTH_SHORT).show()
+                    return false
+                }
+                val intent = Intent(applicationContext, NewGroupActivity::class.java)
+                intent.putExtra("UserList", userList)
+                intent.putExtra("ContactsList", contactsList)
+                startActivity(intent)
+                finish()
             }
         }
         return false
@@ -69,9 +78,11 @@ class GroupChatActivity : AppCompatActivity() {
                         userItem.isSelected = !userItem.isSelected
                         if(userItem.isSelected) {
                             view.isSelectedImage.visibility = View.VISIBLE
+                            userList.add(userItem.user)
                         }
                         else {
                             view.isSelectedImage.visibility = View.INVISIBLE
+                            userList.remove(userItem.user)
                         }
                     }
                     group_recycler.adapter = adapter
@@ -86,7 +97,7 @@ class GroupChatActivity : AppCompatActivity() {
     }
 }
 
-class GroupUserItem(val user: User, val displayName: String): Item<ViewHolder>() {
+class GroupUserItem(val user: User, private val displayName: String): Item<ViewHolder>() {
     var isSelected: Boolean = false
 
     override fun bind(viewHolder: ViewHolder, position: Int) {

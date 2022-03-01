@@ -128,7 +128,7 @@ class SettingsView : AppCompatActivity() {
             override fun onDataChange(snapshot: DataSnapshot) {
                 user = snapshot.getValue(User::class.java)!!
                 NameEntry.setText(user.userName)
-                var uri = user.photoUrl
+                val uri = user.photoUrl
                 Picasso.get().load(uri).into(photo_button)
                 spot = user.spot
                 language_selection.setSelection(spot.toInt())
@@ -154,7 +154,7 @@ class LanguageAdapter(context: Context, languageList: List<Language>) : ArrayAda
         val language = getItem(position)
         val view = convertView ?: LayoutInflater.from(context).inflate(R.layout.language_item, parent, false)
         view.flag_image.setImageResource(language!!.image)
-        view.languageSelection.text = language?.name
+        view.languageSelection.text = language.name
 
         return view
     }
