@@ -1,9 +1,11 @@
 package com.arrowhead.arrownet
 
+import android.app.Notification
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import androidx.appcompat.app.ActionBar
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
@@ -18,6 +20,7 @@ import kotlinx.android.synthetic.main.activity_chat_log.view.*
 import kotlinx.android.synthetic.main.activity_home_page.*
 import kotlinx.android.synthetic.main.chat_from.view.*
 import kotlinx.android.synthetic.main.chat_to.view.*
+import kotlinx.android.synthetic.main.chat_toolbar.*
 
 class ChatLogActivity : AppCompatActivity() {
     val adapter = GroupAdapter<ViewHolder>()
@@ -38,7 +41,11 @@ class ChatLogActivity : AppCompatActivity() {
 
         recyclerview_chat.adapter = adapter
 
-        supportActionBar?.title = name
+        supportActionBar?.displayOptions = ActionBar.DISPLAY_SHOW_CUSTOM
+        supportActionBar?.setCustomView(R.layout.chat_toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        title_name.text = name
+        Picasso.get().load(toUser?.photoUrl).into(profile_image)
 
         listenForMessages()
 

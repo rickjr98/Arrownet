@@ -30,8 +30,6 @@ class NewGroupActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_new_group)
 
-        groupPhotoUri = Uri.parse("android.resource://com.arrowhead.arrownet/" + R.drawable.blank_profile).toString()
-
         actionBar?.setDisplayHomeAsUpEnabled(true)
 
         contactsList = intent.getSerializableExtra("ContactsList") as HashMap<String, String>
@@ -50,6 +48,7 @@ class NewGroupActivity : AppCompatActivity() {
             intent.putExtra("USER_KEY", userList)
             intent.putExtra("ContactsList", contactsList)
             intent.putExtra("NAME_KEY", groupName)
+            intent.putExtra("ImageKey", groupPhotoUri)
             startActivity(intent)
             finish()
         }
@@ -57,6 +56,9 @@ class NewGroupActivity : AppCompatActivity() {
 
     private fun createGroup() {
         groupName = group_name.text.toString()
+        if(selectedPhotoUri == null) {
+            groupPhotoUri = Uri.parse("android.resource://com.arrowhead.arrownet/" + R.drawable.blank_profile).toString()
+        }
         val group = Group(groupName, groupPhotoUri)
         mDatabase = FirebaseDatabase.getInstance().getReference("groups").push()
 
