@@ -1,13 +1,16 @@
 package com.arrowhead.arrownet
 
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.database.Cursor
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.ContactsContract
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.DividerItemDecoration
 import com.google.firebase.auth.FirebaseAuth
@@ -27,6 +30,7 @@ class HomePage : AppCompatActivity() {
     }
 
     val latestMessagesMap = HashMap<String, ChatLogActivity.ChatMessage>()
+    val latestGroupMessagesMap = HashMap<String, GroupChatLogActivity.GroupChatMessage>()
     private val contactsList = HashMap<String, String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,7 +53,7 @@ class HomePage : AppCompatActivity() {
         }
 
         adapter.setOnItemClickListener { item, view ->
-            val intent = Intent(this, ChatLogActivity::class.java)
+            val intent = Intent(view.context, ChatLogActivity::class.java)
             val row = item as LatestMessageRow
             intent.putExtra(NewMessageActivity.USER_KEY, row.chatPartnerUser)
             intent.putExtra(NewMessageActivity.NAME_KEY, row.chatPartnerUser?.userName)
@@ -122,10 +126,43 @@ class HomePage : AppCompatActivity() {
 
     }
 
+    class LatestGroupMessageRow(private val groupMessage: GroupChatLogActivity.GroupChatMessage): Item<ViewHolder>() {
+        var group: Group? = null
+        override fun bind(viewHolder: ViewHolder, position: Int) {
+            viewHolder.itemView.latest_message_text.text = groupMessage.text
+
+            val groupID: String = groupMessage.groupID
+
+            val ref = FirebaseDatabase.getInstance().getReference("groups/$groupID/group-details")
+            ref.addListenerForSingleValueEvent(object: ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    group = snapshot.getValue(Group::class.java)
+                    viewHolder.itemView.latest_message_username.text = group?.GroupName
+
+                    val targetImage = viewHolder.itemView.latest_message_user_picture
+                    Picasso.get().load(group?.GroupImageURI).into(targetImage)
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    // Nada
+                }
+
+            })
+        }
+
+        override fun getLayout(): Int {
+            return R.layout.latest_message_row
+        }
+
+    }
+
     private fun refreshMessages() {
         adapter.clear()
         latestMessagesMap.values.forEach {
             adapter.add(LatestMessageRow(it, contactsList))
+        }
+        latestGroupMessagesMap.values.forEach {
+            adapter.add(LatestGroupMessageRow(it))
         }
     }
 
@@ -155,6 +192,34 @@ class HomePage : AppCompatActivity() {
 
             override fun onCancelled(error: DatabaseError) {
                 //nada
+            }
+
+        })
+
+        val ref2 = FirebaseDatabase.getInstance().getReference("latest-group-messages/$fromID")
+        ref2.addChildEventListener(object: ChildEventListener {
+            override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+                val groupMessage = snapshot.getValue(GroupChatLogActivity.GroupChatMessage::class.java) ?: return
+                latestGroupMessagesMap[snapshot.key!!] = groupMessage
+                refreshMessages()
+            }
+
+            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
+                val groupMessage = snapshot.getValue(GroupChatLogActivity.GroupChatMessage::class.java) ?: return
+                latestGroupMessagesMap[snapshot.key!!] = groupMessage
+                refreshMessages()
+            }
+
+            override fun onChildRemoved(snapshot: DataSnapshot) {
+                // Nada
+            }
+
+            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {
+                // Nada
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Nada
             }
 
         })

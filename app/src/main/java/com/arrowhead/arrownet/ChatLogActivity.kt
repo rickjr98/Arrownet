@@ -1,6 +1,5 @@
 package com.arrowhead.arrownet
 
-import android.app.Notification
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
@@ -34,9 +33,9 @@ class ChatLogActivity : AppCompatActivity() {
         if(name == null) {
             name = intent.getStringExtra(HomePage.NAME_KEY)
         }
-        toUser = intent.getParcelableExtra<User>(NewMessageActivity.USER_KEY)
+        toUser = intent.getParcelableExtra(NewMessageActivity.USER_KEY)
         if(toUser == null) {
-            toUser = intent.getParcelableExtra<User>(HomePage.USER_KEY)
+            toUser = intent.getParcelableExtra(HomePage.USER_KEY)
         }
 
         recyclerview_chat.adapter = adapter
@@ -71,11 +70,6 @@ class ChatLogActivity : AppCompatActivity() {
             R.id.translate ->
             {
                 return false
-            }
-            R.id.home ->
-            {
-                finish()
-                return true
             }
         }
         return false

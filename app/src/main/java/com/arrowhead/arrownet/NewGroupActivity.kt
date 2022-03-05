@@ -4,12 +4,14 @@ import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Parcelable
 import android.util.Log
 import android.view.MenuItem
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
+import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.activity_new_group.*
 import kotlinx.android.synthetic.main.activity_settings_view.*
 import java.util.*
@@ -25,6 +27,7 @@ class NewGroupActivity : AppCompatActivity() {
     private lateinit var groupName: String
     private lateinit var auth: FirebaseAuth
     private lateinit var uid: String
+    private lateinit var id: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,10 +48,11 @@ class NewGroupActivity : AppCompatActivity() {
             uploadImageToFirebase()
             createGroup()
             val intent = Intent(applicationContext, GroupChatLogActivity::class.java)
-            intent.putExtra("USER_KEY", userList)
+            intent.putExtra("UserList", userList)
             intent.putExtra("ContactsList", contactsList)
-            intent.putExtra("NAME_KEY", groupName)
+            intent.putExtra("GroupName", groupName)
             intent.putExtra("ImageKey", groupPhotoUri)
+            intent.putExtra("GroupID", id)
             startActivity(intent)
             finish()
         }
@@ -59,14 +63,16 @@ class NewGroupActivity : AppCompatActivity() {
         if(selectedPhotoUri == null) {
             groupPhotoUri = Uri.parse("android.resource://com.arrowhead.arrownet/" + R.drawable.blank_profile).toString()
         }
-        val group = Group(groupName, groupPhotoUri)
         mDatabase = FirebaseDatabase.getInstance().getReference("groups").push()
+        id = mDatabase.key.toString()
+        val group = Group(id, groupName, groupPhotoUri)
 
         mDatabase.child("group-details").setValue(group)
 
         val admin = GroupMember(uid, "admin")
 
         mDatabase.child("members").child(uid).setValue(admin)
+
         for(User in userList) {
             val newMember = GroupMember(User.uid, "member")
             mDatabase.child("members").child(User.uid).setValue(newMember)
@@ -109,6 +115,8 @@ class NewGroupActivity : AppCompatActivity() {
     }
 }
 
-class Group(val GroupName: String, val GroupImageURI: String)
+class Group(var GroupID: String, var GroupName: String, var GroupImageURI: String) {
+    constructor() : this("", "", "")
+}
 
 class GroupMember(val uid: String, val role: String)

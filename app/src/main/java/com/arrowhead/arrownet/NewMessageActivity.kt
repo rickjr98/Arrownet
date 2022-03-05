@@ -49,7 +49,7 @@ class NewMessageActivity : AppCompatActivity() {
                     val number = user?.phoneNumber.toString()
                     if (user != null) {
                         if(contactsList.containsKey(number)) {
-                            val contactName = contactsList.get(number).toString()
+                            val contactName = contactsList[number].toString()
                             adapter.add(UserItem(user, contactName))
                         }
                     }
