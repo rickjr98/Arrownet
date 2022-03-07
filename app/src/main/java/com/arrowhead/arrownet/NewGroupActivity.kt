@@ -48,7 +48,6 @@ class NewGroupActivity : AppCompatActivity() {
             uploadImageToFirebase()
             createGroup()
             val intent = Intent(applicationContext, GroupChatLogActivity::class.java)
-            intent.putExtra("UserList", userList)
             intent.putExtra("ContactsList", contactsList)
             intent.putExtra("GroupName", groupName)
             intent.putExtra("ImageKey", groupPhotoUri)
@@ -115,8 +114,11 @@ class NewGroupActivity : AppCompatActivity() {
     }
 }
 
-class Group(var GroupID: String, var GroupName: String, var GroupImageURI: String) {
+@Parcelize
+class Group(var GroupID: String, var GroupName: String, var GroupImageURI: String): Parcelable {
     constructor() : this("", "", "")
 }
 
-class GroupMember(val uid: String, val role: String)
+class GroupMember(val uid: String, val role: String) {
+    constructor() : this("", "")
+}

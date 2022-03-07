@@ -1,22 +1,17 @@
 package com.arrowhead.arrownet
 
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.database.Cursor
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.ContactsContract
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.Toast
 import androidx.core.app.ActivityCompat
-import androidx.recyclerview.widget.DividerItemDecoration
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.squareup.picasso.Picasso
-import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.activity_home_page.*
@@ -28,19 +23,11 @@ class HomePage : AppCompatActivity() {
         val USER_KEY = "USER_KEY"
         val NAME_KEY = "NAME_KEY"
     }
-
-    val latestMessagesMap = HashMap<String, ChatLogActivity.ChatMessage>()
-    val latestGroupMessagesMap = HashMap<String, GroupChatLogActivity.GroupChatMessage>()
     private val contactsList = HashMap<String, String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home_page)
-
-        recyclerview_latest_message.adapter = adapter
-        recyclerview_latest_message.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL))
-
-        listenForLatestMessages()
 
         retrieveCurrentUser()
         checkIfUserLoggedIn()
@@ -52,13 +39,8 @@ class HomePage : AppCompatActivity() {
             readContacts()
         }
 
-        adapter.setOnItemClickListener { item, view ->
-            val intent = Intent(view.context, ChatLogActivity::class.java)
-            val row = item as LatestMessageRow
-            intent.putExtra(NewMessageActivity.USER_KEY, row.chatPartnerUser)
-            intent.putExtra(NewMessageActivity.NAME_KEY, row.chatPartnerUser?.userName)
-            startActivity(intent)
-        }
+        view_page_adapter.adapter = PageAdapter(supportFragmentManager, contactsList)
+        home_page_tabs.setupWithViewPager(view_page_adapter)
 
         newMessageButton.setOnClickListener {
             val intent = Intent(this, NewMessageActivity::class.java)
@@ -156,77 +138,6 @@ class HomePage : AppCompatActivity() {
 
     }
 
-    private fun refreshMessages() {
-        adapter.clear()
-        latestMessagesMap.values.forEach {
-            adapter.add(LatestMessageRow(it, contactsList))
-        }
-        latestGroupMessagesMap.values.forEach {
-            adapter.add(LatestGroupMessageRow(it))
-        }
-    }
-
-    private fun listenForLatestMessages() {
-        val fromID = FirebaseAuth.getInstance().uid
-        val ref = FirebaseDatabase.getInstance().getReference("latest-messages/$fromID")
-        ref.addChildEventListener(object: ChildEventListener {
-            override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
-                val chatMessage = snapshot.getValue(ChatLogActivity.ChatMessage::class.java) ?: return
-                latestMessagesMap[snapshot.key!!] = chatMessage
-                refreshMessages()
-            }
-
-            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
-                val chatMessage = snapshot.getValue(ChatLogActivity.ChatMessage::class.java) ?: return
-                latestMessagesMap[snapshot.key!!] = chatMessage
-                refreshMessages()
-            }
-
-            override fun onChildRemoved(snapshot: DataSnapshot) {
-                //nada
-            }
-
-            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {
-                //nada
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                //nada
-            }
-
-        })
-
-        val ref2 = FirebaseDatabase.getInstance().getReference("latest-group-messages/$fromID")
-        ref2.addChildEventListener(object: ChildEventListener {
-            override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
-                val groupMessage = snapshot.getValue(GroupChatLogActivity.GroupChatMessage::class.java) ?: return
-                latestGroupMessagesMap[snapshot.key!!] = groupMessage
-                refreshMessages()
-            }
-
-            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
-                val groupMessage = snapshot.getValue(GroupChatLogActivity.GroupChatMessage::class.java) ?: return
-                latestGroupMessagesMap[snapshot.key!!] = groupMessage
-                refreshMessages()
-            }
-
-            override fun onChildRemoved(snapshot: DataSnapshot) {
-                // Nada
-            }
-
-            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {
-                // Nada
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                // Nada
-            }
-
-        })
-    }
-
-    private val adapter = GroupAdapter<ViewHolder>()
-
     private fun retrieveCurrentUser() {
         val uid = FirebaseAuth.getInstance().uid
         val ref = FirebaseDatabase.getInstance().getReference("users/$uid")
@@ -238,7 +149,6 @@ class HomePage : AppCompatActivity() {
             override fun onCancelled(error: DatabaseError) {
                 // Nada
             }
-
         })
     }
 
