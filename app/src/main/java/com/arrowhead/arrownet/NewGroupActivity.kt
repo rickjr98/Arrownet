@@ -68,12 +68,12 @@ class NewGroupActivity : AppCompatActivity() {
 
         mDatabase.child("group-details").setValue(group)
 
-        val admin = GroupMember(uid, "admin")
+        val admin = HomePage.currentUser?.let { GroupMember(uid, "admin", it.userName, HomePage.currentUser!!.flagUrl, HomePage.currentUser!!.phoneNumber) }
 
         mDatabase.child("members").child(uid).setValue(admin)
 
         for(User in userList) {
-            val newMember = GroupMember(User.uid, "member")
+            val newMember = GroupMember(User.uid, "member", User.userName, User.flagUrl, User.phoneNumber)
             mDatabase.child("members").child(User.uid).setValue(newMember)
         }
     }
@@ -119,6 +119,6 @@ class Group(var GroupID: String, var GroupName: String, var GroupImageURI: Strin
     constructor() : this("", "", "")
 }
 
-class GroupMember(val uid: String, val role: String) {
-    constructor() : this("", "")
+class GroupMember(val uid: String, val role: String, val displayName: String, val flagUrl: String, val phoneNumber: String) {
+    constructor() : this("", "", "", "", "")
 }

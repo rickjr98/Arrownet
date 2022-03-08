@@ -68,6 +68,7 @@ class HomePage : AppCompatActivity() {
 
     class LatestMessageRow(private val chatMessage: ChatLogActivity.ChatMessage, private val contacts: HashMap<String, String>): Item<ViewHolder>() {
         var chatPartnerUser: User? = null
+        lateinit var name: String
         override fun bind(viewHolder: ViewHolder, position: Int) {
             viewHolder.itemView.latest_message_text.text = chatMessage.text
 
@@ -86,9 +87,11 @@ class HomePage : AppCompatActivity() {
                     val number = chatPartnerUser?.phoneNumber.toString()
                     if(contacts.containsKey(number)) {
                         viewHolder.itemView.latest_message_username.text = contacts[number].toString()
+                        name = viewHolder.itemView.latest_message_username.text.toString()
                     }
                     else {
                         viewHolder.itemView.latest_message_username.text = chatPartnerUser?.userName
+                        name = viewHolder.itemView.latest_message_username.text.toString()
                     }
 
                     val targetImage = viewHolder.itemView.latest_message_user_picture

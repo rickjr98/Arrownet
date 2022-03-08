@@ -22,7 +22,8 @@
         <entry key="..\:/Users/rickj/StudioProjects/Arrownet/app/src/main/res/layout/activity_settings_view.xml" value="0.2957427536231884" />
         <entry key="..\:/Users/rickj/StudioProjects/Arrownet/app/src/main/res/layout/activity_verify.xml" value="0.2957427536231884" />
         <entry key="..\:/Users/rickj/StudioProjects/Arrownet/app/src/main/res/layout/chat_from.xml" value="0.3625" />
-        <entry key="..\:/Users/rickj/StudioProjects/Arrownet/app/src/main/res/layout/chat_to.xml" value="0.3625" />
+        <entry key="..\:/Users/rickj/StudioProjects/Arrownet/app/src/main/res/layout/chat_from_group.xml" value="0.9" />
+        <entry key="..\:/Users/rickj/StudioProjects/Arrownet/app/src/main/res/layout/chat_to.xml" value="0.67" />
         <entry key="..\:/Users/rickj/StudioProjects/Arrownet/app/src/main/res/layout/chat_toolbar.xml" value="0.75" />
         <entry key="..\:/Users/rickj/StudioProjects/Arrownet/app/src/main/res/layout/fragment_chats.xml" value="0.25" />
         <entry key="..\:/Users/rickj/StudioProjects/Arrownet/app/src/main/res/layout/fragment_groups.xml" value="0.25" />

@@ -2,25 +2,27 @@ package com.arrowhead.arrownet
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.renderscript.Sampler
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.Toast
 import androidx.appcompat.app.ActionBar
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
-import com.google.firebase.ktx.Firebase
 import com.squareup.picasso.Picasso
 import com.xwray.groupie.GroupAdapter
+import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.activity_group_chat_log.*
+import kotlinx.android.synthetic.main.chat_from.view.*
+import kotlinx.android.synthetic.main.chat_from.view.userFromText
+import kotlinx.android.synthetic.main.chat_from_group.view.*
+import kotlinx.android.synthetic.main.chat_to.view.*
 import kotlinx.android.synthetic.main.chat_toolbar.*
 
 class GroupChatLogActivity : AppCompatActivity() {
     private var contactsList = HashMap<String, String>()
     private var uidList: ArrayList<String> = arrayListOf()
     private lateinit var groupID: String
-    var user: User? = null
+    private var toUsers = HashMap<String, GroupMember>()
     val adapter = GroupAdapter<ViewHolder>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,9 +38,10 @@ class GroupChatLogActivity : AppCompatActivity() {
         membersReference.addListenerForSingleValueEvent(object: ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 snapshot.children.forEach {
-                    val user = it.getValue(GroupMember::class.java)
-                    if (user != null) {
-                        uidList.add(user.uid)
+                    val groupMember = it.getValue(GroupMember::class.java)
+                    if (groupMember != null) {
+                        toUsers[groupMember.uid] = groupMember
+                        uidList.add(groupMember.uid)
                     }
                 }
             }
@@ -46,7 +49,6 @@ class GroupChatLogActivity : AppCompatActivity() {
             override fun onCancelled(error: DatabaseError) {
                 // Nada
             }
-
         })
 
         group_chat_recyclerview.adapter = adapter
@@ -111,12 +113,12 @@ class GroupChatLogActivity : AppCompatActivity() {
     }
 
     private fun listenForMessages() {
-        val reference = FirebaseDatabase.getInstance().getReference("groups/$groupID").child("messages")
-        val usersReference = FirebaseDatabase.getInstance().getReference("users")
+        val reference = FirebaseDatabase.getInstance().getReference("groups/$groupID/messages")
 
         reference.addChildEventListener(object: ChildEventListener {
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
                 val chatMessage = snapshot.getValue(GroupChatMessage::class.java)
+                val toUser: GroupMember? = toUsers[chatMessage?.fromID]
 
                 if(chatMessage != null) {
                     if(chatMessage.fromID == FirebaseAuth.getInstance().uid) {
@@ -124,11 +126,7 @@ class GroupChatLogActivity : AppCompatActivity() {
                         adapter.add(ChatToItem(chatMessage.text, currentUser))
                     }
                     else {
-                        val toID = chatMessage.fromID.toString()
-                        usersReference.child(toID).get().addOnSuccessListener {
-                            user = it.getValue(User::class.java)!!
-                        }
-                        adapter.add(ChatFromItem(chatMessage.text, user!!))
+                        adapter.add(ChatFromGroupItem(chatMessage.text, toUser!!))
                     }
                 }
                 group_chat_recyclerview.scrollToPosition(adapter.itemCount - 1)
@@ -152,4 +150,20 @@ class GroupChatLogActivity : AppCompatActivity() {
 
         })
     }
+}
+
+class ChatFromGroupItem(val text: String, private val member: GroupMember): Item<ViewHolder>() {
+    override fun bind(viewHolder: ViewHolder, position: Int) {
+        viewHolder.itemView.userFromGroupText.text = text
+        viewHolder.itemView.userFromGroupName.text = member.displayName
+
+        val uri = member.flagUrl
+        val image = viewHolder.itemView.userFromImageGroup
+        Picasso.get().load(uri).into(image)
+    }
+
+    override fun getLayout(): Int {
+        return R.layout.chat_from_group
+    }
+
 }

@@ -8,9 +8,8 @@
         android:id="@+id/userToImage"
         android:layout_width="35dp"
         android:layout_height="35dp"
-        android:layout_marginTop="2dp"
+        android:layout_marginTop="5dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
         android:src="@drawable/blank_profile"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -18,7 +17,8 @@
     <TextView
         android:id="@+id/userToText"
         android:layout_width="wrap_content"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5dp"
         android:background="@drawable/rounded_to_edge"
         android:maxWidth="240dp"
         android:paddingLeft="8dp"
@@ -27,6 +27,7 @@
         android:paddingBottom="8dp"
         android:text="TextView"
         android:textColor="#FFFFFF"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/userToImage"
         app:layout_constraintTop_toTopOf="@+id/userToImage" />
 </androidx.constraintlayout.widget.ConstraintLayout>

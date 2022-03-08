@@ -38,7 +38,7 @@ class ChatsFragment : Fragment() {
             val intent = Intent(view.context, ChatLogActivity::class.java)
             val row = item as HomePage.LatestMessageRow
             intent.putExtra(NewMessageActivity.USER_KEY, row.chatPartnerUser)
-            intent.putExtra(NewMessageActivity.NAME_KEY, row.chatPartnerUser?.userName)
+            intent.putExtra(NewMessageActivity.NAME_KEY, row.name)
             startActivity(intent)
         }
     }
