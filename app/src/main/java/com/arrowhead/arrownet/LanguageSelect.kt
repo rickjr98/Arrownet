@@ -1,9 +1,9 @@
 package com.arrowhead.arrownet
 
 import com.google.firebase.ktx.Firebase
-import com.google.firebase.ml.naturallanguage.translate.FirebaseTranslateLanguage
+import com.google.mlkit.nl.translate.TranslateLanguage
 
-data class Language(val image: Int, val name: String, val languageID: Int)
+data class Language(val image: Int, val name: String, val languageID: String)
 
 object Languages {
     private val images = intArrayOf(
@@ -31,15 +31,15 @@ object Languages {
     )
 
     private val languageIDs = arrayOf(
-        59,
-        FirebaseTranslateLanguage.EN,
-        FirebaseTranslateLanguage.ES,
-        FirebaseTranslateLanguage.RU,
-        FirebaseTranslateLanguage.PT,
-        FirebaseTranslateLanguage.FR,
-        FirebaseTranslateLanguage.DE,
-        FirebaseTranslateLanguage.IT,
-        FirebaseTranslateLanguage.ZH
+        "51",
+        TranslateLanguage.ENGLISH,
+        TranslateLanguage.SPANISH,
+        TranslateLanguage.RUSSIAN,
+        TranslateLanguage.PORTUGUESE,
+        TranslateLanguage.FRENCH,
+        TranslateLanguage.GERMAN,
+        TranslateLanguage.ITALIAN,
+        TranslateLanguage.CHINESE
     )
 
     var list: ArrayList<Language>? = null

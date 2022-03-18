@@ -1,9 +1,12 @@
 package com.arrowhead.arrownet
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Toast
 import androidx.appcompat.app.ActionBar
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
@@ -21,9 +24,9 @@ import kotlinx.android.synthetic.main.chat_toolbar.*
 class GroupChatLogActivity : AppCompatActivity() {
     private var contactsList = HashMap<String, String>()
     private var uidList: ArrayList<String> = arrayListOf()
-    private lateinit var groupID: String
     private var toUsers = HashMap<String, GroupMember>()
     val adapter = GroupAdapter<ViewHolder>()
+    private var groupID: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,24 +35,11 @@ class GroupChatLogActivity : AppCompatActivity() {
         val name = intent.getStringExtra("GroupName")
         val image = intent.getStringExtra("ImageKey")
         groupID = intent.getStringExtra("GroupID").toString()
-        contactsList = intent.getSerializableExtra("ContactsList") as HashMap<String, String>
+        contactsList = HomePage.contactsList
+        uidList = intent.getSerializableExtra("UidList") as ArrayList<String>
+        toUsers = intent.getSerializableExtra("toUsers") as HashMap<String, GroupMember>
 
-        val membersReference = FirebaseDatabase.getInstance().getReference("groups/$groupID/members")
-        membersReference.addListenerForSingleValueEvent(object: ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                snapshot.children.forEach {
-                    val groupMember = it.getValue(GroupMember::class.java)
-                    if (groupMember != null) {
-                        toUsers[groupMember.uid] = groupMember
-                        uidList.add(groupMember.uid)
-                    }
-                }
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                // Nada
-            }
-        })
+        Log.d("Contacts", contactsList.toString())
 
         group_chat_recyclerview.adapter = adapter
 
@@ -69,18 +59,28 @@ class GroupChatLogActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
         }
+
+        title_name.setOnClickListener {
+            val intent = Intent(this, GroupInfo::class.java)
+            intent.putExtra("ContactsList", contactsList)
+            intent.putExtra("toUsers", toUsers)
+            intent.putExtra("GroupName", name)
+            intent.putExtra("ImageKey", image)
+            intent.putExtra("UidList", uidList)
+            intent.putExtra("GroupID", groupID)
+            startActivity(intent)
+            finish()
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        super.onCreateOptionsMenu(menu)
-
         menuInflater.inflate(R.menu.chat_menu, menu)
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when(item.itemId) {
-            R.id.translate ->
+            R.id.translate_button ->
             {
                 return false
             }
@@ -118,7 +118,6 @@ class GroupChatLogActivity : AppCompatActivity() {
         reference.addChildEventListener(object: ChildEventListener {
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
                 val chatMessage = snapshot.getValue(GroupChatMessage::class.java)
-                val toUser: GroupMember? = toUsers[chatMessage?.fromID]
 
                 if(chatMessage != null) {
                     if(chatMessage.fromID == FirebaseAuth.getInstance().uid) {
@@ -126,7 +125,10 @@ class GroupChatLogActivity : AppCompatActivity() {
                         adapter.add(ChatToItem(chatMessage.text, currentUser))
                     }
                     else {
-                        adapter.add(ChatFromGroupItem(chatMessage.text, toUser!!))
+                        val toUser: GroupMember? = toUsers[chatMessage.fromID]
+                        toUser?.let { ChatFromGroupItem(chatMessage.text, it) }?.let {
+                            adapter.add(it)
+                        }
                     }
                 }
                 group_chat_recyclerview.scrollToPosition(adapter.itemCount - 1)

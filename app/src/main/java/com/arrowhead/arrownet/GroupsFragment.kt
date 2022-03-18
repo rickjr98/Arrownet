@@ -9,10 +9,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.ChildEventListener
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.*
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.fragment_chats.*
@@ -35,6 +32,8 @@ class GroupsFragment : Fragment() {
             intent.putExtra("ImageKey", row.group?.GroupImageURI)
             intent.putExtra("ContactsList", contactsList)
             intent.putExtra("GroupID", row.group?.GroupID)
+            intent.putExtra("UidList", row.uidList)
+            intent.putExtra("toUsers", row.toUsers)
             startActivity(intent)
         }
     }

@@ -22,6 +22,8 @@ class NewGroupActivity : AppCompatActivity() {
     private var contactsList = HashMap<String, String>()
     private lateinit var mDatabase: DatabaseReference
     private var userList: ArrayList<User> = arrayListOf()
+    private val uidList: ArrayList<String> = arrayListOf()
+    private val toUsers = HashMap<String, GroupMember>()
     private var selectedPhotoUri: Uri? = null
     private lateinit var groupPhotoUri: String
     private lateinit var groupName: String
@@ -52,6 +54,8 @@ class NewGroupActivity : AppCompatActivity() {
             intent.putExtra("GroupName", groupName)
             intent.putExtra("ImageKey", groupPhotoUri)
             intent.putExtra("GroupID", id)
+            intent.putExtra("UidList", uidList)
+            intent.putExtra("toUsers", toUsers)
             startActivity(intent)
             finish()
         }
@@ -75,6 +79,8 @@ class NewGroupActivity : AppCompatActivity() {
         for(User in userList) {
             val newMember = GroupMember(User.uid, "member", User.userName, User.flagUrl, User.phoneNumber)
             mDatabase.child("members").child(User.uid).setValue(newMember)
+            uidList.add(User.uid)
+            toUsers[newMember.uid] = newMember
         }
     }
 
@@ -119,6 +125,7 @@ class Group(var GroupID: String, var GroupName: String, var GroupImageURI: Strin
     constructor() : this("", "", "")
 }
 
-class GroupMember(val uid: String, val role: String, val displayName: String, val flagUrl: String, val phoneNumber: String) {
+@Parcelize
+class GroupMember(val uid: String, val role: String, val displayName: String, val flagUrl: String, val phoneNumber: String): Parcelable {
     constructor() : this("", "", "", "", "")
 }

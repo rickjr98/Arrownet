@@ -59,6 +59,8 @@ class SettingsView : AppCompatActivity() {
             mDatabase.child("languageID").setValue(languageID)
             mDatabase.child("flagUrl").setValue(flagUrl)
             mDatabase.child("spot").setValue(spot)
+            val intent = Intent(this, HomePage::class.java)
+            startActivity(intent)
             finish()
             Toast.makeText(applicationContext, "User Profile Updated", Toast.LENGTH_SHORT).show()
         }

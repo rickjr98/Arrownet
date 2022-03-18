@@ -30,8 +30,8 @@ class VerifyActivity : AppCompatActivity() {
         val codeGiven = findViewById<EditText>(R.id.verificationCodeEntry)
 
         verify.setOnClickListener {
-            var code = codeGiven.text.toString().trim()
-            if(!code.isEmpty()) {
+            val code = codeGiven.text.toString().trim()
+            if(code.isNotEmpty()) {
                 val credential : PhoneAuthCredential = PhoneAuthProvider.getCredential(
                     storedVerificationId.toString(), code)
                 signInWithPhoneAuthCredential(credential)
@@ -66,12 +66,12 @@ class VerifyActivity : AppCompatActivity() {
         val ref = FirebaseDatabase.getInstance().getReference("/users/$uid")
         val uri = Uri.parse("android.resource://com.arrowhead.arrownet/" + R.drawable.blank_profile).toString()
         val flagUri = Uri.parse("android.resource://com.arrowhead.arrownet/" + R.drawable.blank_profile).toString()
-        val user = User(uid, phoneNumber, "", uri, "", flagUri, "0")
+        val user = User(uid, phoneNumber, "", uri, "und", flagUri, "0")
         ref.setValue(user)
     }
 }
 
 @Parcelize
 class User(val uid: String, val phoneNumber: String, val userName: String, val photoUrl: String, val languageID: String, val flagUrl: String, val spot: String): Parcelable {
-    constructor() : this("", "", "", "", "", "", "")
+    constructor() : this("", "", "", "", "und", "", "")
 }

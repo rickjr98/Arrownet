@@ -20,10 +20,10 @@ import kotlinx.android.synthetic.main.latest_message_row.view.*
 class HomePage : AppCompatActivity() {
     companion object {
         var currentUser: User? = null
+        val contactsList = HashMap<String, String>()
         val USER_KEY = "USER_KEY"
         val NAME_KEY = "NAME_KEY"
     }
-    private val contactsList = HashMap<String, String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -113,6 +113,8 @@ class HomePage : AppCompatActivity() {
 
     class LatestGroupMessageRow(private val groupMessage: GroupChatLogActivity.GroupChatMessage): Item<ViewHolder>() {
         var group: Group? = null
+        val toUsers = HashMap<String, GroupMember>()
+        val uidList: ArrayList<String> = arrayListOf()
         override fun bind(viewHolder: ViewHolder, position: Int) {
             viewHolder.itemView.latest_message_text.text = groupMessage.text
 
@@ -133,6 +135,23 @@ class HomePage : AppCompatActivity() {
                 }
 
             })
+
+            val membersReference = FirebaseDatabase.getInstance().getReference("groups/$groupID/members")
+            membersReference.addListenerForSingleValueEvent(object: ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    snapshot.children.forEach {
+                        val groupMember = it.getValue(GroupMember::class.java)
+                        if (groupMember != null) {
+                            toUsers[groupMember.uid] = groupMember
+                            uidList.add(groupMember.uid)
+                        }
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    // Nada
+                }
+            })
         }
 
         override fun getLayout(): Int {
@@ -147,6 +166,7 @@ class HomePage : AppCompatActivity() {
         ref.addListenerForSingleValueEvent(object: ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 currentUser = snapshot.getValue(User::class.java)
+                ref.child("translate").setValue(false)
             }
 
             override fun onCancelled(error: DatabaseError) {
