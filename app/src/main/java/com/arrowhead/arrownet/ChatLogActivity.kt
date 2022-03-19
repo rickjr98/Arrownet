@@ -4,17 +4,13 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
-import android.widget.CompoundButton
 import android.widget.Toast
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.widget.SwitchCompat
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
-import com.google.firebase.remoteconfig.FirebaseRemoteConfig
-import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings
 import com.google.mlkit.common.model.DownloadConditions
 import com.google.mlkit.nl.languageid.LanguageIdentification.getClient
-import com.google.mlkit.nl.translate.TranslateLanguage
 import com.google.mlkit.nl.translate.Translation
 import com.google.mlkit.nl.translate.TranslatorOptions
 import com.squareup.picasso.Picasso
@@ -28,27 +24,23 @@ import kotlinx.android.synthetic.main.chat_from.view.*
 import kotlinx.android.synthetic.main.chat_to.view.*
 import kotlinx.android.synthetic.main.chat_toolbar.*
 import java.util.*
-import kotlin.collections.HashMap
 
 class ChatLogActivity : AppCompatActivity() {
     val adapter = GroupAdapter<ViewHolder>()
     var toUser: User? = null
-    private var translate: Boolean = false
-    private val userReference = FirebaseDatabase.getInstance().getReference("users/${HomePage.currentUser?.uid}")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat_log)
 
         var name = intent.getStringExtra(NewMessageActivity.NAME_KEY)
-        if(name == null) {
+        if (name == null) {
             name = intent.getStringExtra(HomePage.NAME_KEY)
         }
         toUser = intent.getParcelableExtra(NewMessageActivity.USER_KEY)
-        if(toUser == null) {
+        if (toUser == null) {
             toUser = intent.getParcelableExtra(HomePage.USER_KEY)
         }
-        userReference.child("translate").setValue(false)
 
         recyclerview_chat.adapter = adapter
 
@@ -59,37 +51,20 @@ class ChatLogActivity : AppCompatActivity() {
         Picasso.get().load(toUser?.photoUrl).into(profile_image)
         Picasso.get().load(HomePage.currentUser?.flagUrl).into(translate_image)
 
+        translateText()
         listenForMessages()
 
+        translate_switch.setOnCheckedChangeListener { _, p1 ->
+            listenForTranslatedMessages(p1)
+        }
+
         sendButton.setOnClickListener {
-            if(newMessageText.text.isNotEmpty()) {
+            if (newMessageText.text.isNotEmpty()) {
                 sendMessage()
-            }
-            else {
+            } else {
                 return@setOnClickListener
             }
         }
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.chat_menu, menu)
-
-        val item = menu!!.findItem(R.id.translate_button)
-        item.setActionView(R.layout.switch_item)
-        val translateButton = item.actionView.findViewById<SwitchCompat>(R.id.translate_switch)
-        translateButton.setOnCheckedChangeListener { _, p1 ->
-            if (p1) {
-                translate = true
-                adapter.clear()
-                translateText()
-                listenForMessages()
-            } else {
-                translate = false
-                adapter.clear()
-                listenForMessages()
-            }
-        }
-        return super.onCreateOptionsMenu(menu)
     }
 
     private fun translateText() {
@@ -98,44 +73,45 @@ class ChatLogActivity : AppCompatActivity() {
         val toID = toUser?.uid
         val ref = FirebaseDatabase.getInstance().getReference("messages/$fromID/$toID")
 
-        ref.addListenerForSingleValueEvent(object: ValueEventListener {
+        ref.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 snapshot.children.forEach {
                     val chatMessage = it.getValue(ChatMessage::class.java)
                     val key = it.key.toString()
 
-                    if(chatMessage != null) {
-                        if(chatMessage.fromID == FirebaseAuth.getInstance().uid) {
+                    if (chatMessage != null) {
+                        if (chatMessage.fromID == FirebaseAuth.getInstance().uid) {
                             return@forEach
-                        }
-                        else {
+                        } else {
                             val languageIdentifier = getClient()
-                            languageIdentifier.identifyLanguage(chatMessage.text).addOnSuccessListener { languageCode ->
-                                if (languageCode == "und") {
-                                    Log.d("HERE", "Can't identify language.")
-                                }
-                                else {
-                                    val options = TranslatorOptions.Builder()
-                                        .setSourceLanguage(languageCode)
-                                        .setTargetLanguage(currentUserLanguageCode)
-                                        .build()
+                            languageIdentifier.identifyLanguage(chatMessage.text)
+                                .addOnSuccessListener { languageCode ->
+                                    if (languageCode == "und") {
+                                        ref.child(key).child("translatedMessage")
+                                            .setValue(chatMessage.text)
+                                    } else {
+                                        val options = TranslatorOptions.Builder()
+                                            .setSourceLanguage(languageCode)
+                                            .setTargetLanguage(currentUserLanguageCode)
+                                            .build()
 
-                                    val translator = Translation.getClient(options)
+                                        val translator = Translation.getClient(options)
 
-                                    val conditions = DownloadConditions.Builder().build()
+                                        val conditions = DownloadConditions.Builder().build()
 
-                                    translator.downloadModelIfNeeded(conditions)
-                                        .addOnSuccessListener {
-                                            translator.translate(chatMessage.text)
-                                                .addOnSuccessListener {
-                                                    ref.child(key).child("translatedMessage").setValue(it)
-                                                }
-                                        }
-                                        .addOnFailureListener {
-                                            // Model Failed
-                                        }
-                                }
-                            }.addOnFailureListener {
+                                        translator.downloadModelIfNeeded(conditions)
+                                            .addOnSuccessListener {
+                                                translator.translate(chatMessage.text)
+                                                    .addOnSuccessListener {
+                                                        ref.child(key).child("translatedMessage")
+                                                            .setValue(it)
+                                                    }
+                                            }
+                                            .addOnFailureListener {
+                                                // Model Failed
+                                            }
+                                    }
+                                }.addOnFailureListener {
                                 // Nada
                             }
                         }
@@ -150,7 +126,13 @@ class ChatLogActivity : AppCompatActivity() {
         })
     }
 
-    class ChatMessage(val id: String, val text: String, val fromID: String, val toID: String, var translatedMessage: String) {
+    class ChatMessage(
+        val id: String,
+        val text: String,
+        val fromID: String,
+        val toID: String,
+        var translatedMessage: String
+    ) {
         constructor() : this("", "", "", "", "")
     }
 
@@ -160,7 +142,7 @@ class ChatLogActivity : AppCompatActivity() {
         val user = intent.getParcelableExtra<User>(NewMessageActivity.USER_KEY)
         val toID = user!!.uid
 
-        if(fromID == null) {
+        if (fromID == null) {
             return
         }
 
@@ -187,22 +169,18 @@ class ChatLogActivity : AppCompatActivity() {
 
         val ref = FirebaseDatabase.getInstance().getReference("messages/$fromID/$toID")
 
-        ref.addChildEventListener(object: ChildEventListener {
+        ref.addChildEventListener(object : ChildEventListener {
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
                 val chatMessage = snapshot.getValue(ChatMessage::class.java)
+                translateText()
 
-                if(chatMessage != null) {
-                    if(chatMessage.fromID == FirebaseAuth.getInstance().uid) {
+                if (chatMessage != null) {
+                    if (chatMessage.fromID == FirebaseAuth.getInstance().uid) {
                         val currentUser = HomePage.currentUser ?: return
                         adapter.add(ChatToItem(chatMessage.text, currentUser))
                     }
                     else {
-                        if(translate) {
-                            adapter.add(ChatFromItem(chatMessage.translatedMessage, toUser!!))
-                        }
-                        else {
-                            adapter.add(ChatFromItem(chatMessage.text, toUser!!))
-                        }
+                        adapter.add(ChatFromItem(chatMessage.text, toUser!!))
                     }
                 }
                 recyclerview_chat.scrollToPosition(adapter.itemCount - 1)
@@ -224,6 +202,40 @@ class ChatLogActivity : AppCompatActivity() {
                 // nada
             }
 
+        })
+    }
+
+    private fun listenForTranslatedMessages(checkTranslate: Boolean) {
+        val fromID = FirebaseAuth.getInstance().uid
+        val toID = toUser?.uid
+
+        val ref = FirebaseDatabase.getInstance().getReference("messages/$fromID/$toID")
+
+        ref.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                adapter.clear()
+                snapshot.children.forEach {
+                    val chatMessage = it.getValue(ChatMessage::class.java)
+
+                    if (chatMessage != null) {
+                        if (chatMessage.fromID == FirebaseAuth.getInstance().uid) {
+                            val currentUser = HomePage.currentUser ?: return
+                            adapter.add(ChatToItem(chatMessage.text, currentUser))
+                        } else {
+                            if (checkTranslate) {
+                                adapter.add(ChatFromItem(chatMessage.translatedMessage, toUser!!))
+                            } else {
+                                adapter.add(ChatFromItem(chatMessage.text, toUser!!))
+                            }
+                        }
+                    }
+                }
+                recyclerview_chat.scrollToPosition(adapter.itemCount - 1)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Nada
+            }
         })
     }
 }

@@ -9,7 +9,6 @@
         android:id="@+id/custom_toolbar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
         android:background="?attr/colorPrimary"
         android:minHeight="?attr/actionBarSize"
         android:theme="?attr/actionBarTheme"
@@ -66,9 +65,21 @@
         android:id="@+id/translate_image"
         android:layout_width="25dp"
         android:layout_height="25dp"
+        android:layout_marginEnd="8dp"
         android:src="@drawable/blank_profile"
         app:layout_constraintBottom_toBottomOf="@+id/custom_toolbar"
-        app:layout_constraintEnd_toEndOf="@+id/custom_toolbar"
+        app:layout_constraintEnd_toStartOf="@+id/translate_switch"
+        app:layout_constraintTop_toTopOf="@+id/custom_toolbar" />
+
+    <Switch
+        android:id="@+id/translate_switch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:layout_marginBottom="14dp"
+        android:minHeight="48dp"
+        app:layout_constraintBottom_toBottomOf="@+id/custom_toolbar"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/custom_toolbar" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

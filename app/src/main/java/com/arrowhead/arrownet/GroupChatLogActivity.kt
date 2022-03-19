@@ -73,21 +73,6 @@ class GroupChatLogActivity : AppCompatActivity() {
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.chat_menu, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when(item.itemId) {
-            R.id.translate_button ->
-            {
-                return false
-            }
-        }
-        return false
-    }
-
     class GroupChatMessage(val id: String, val text: String, val fromID: String?, val groupID: String) {
         constructor() : this("", "", "", "")
     }
