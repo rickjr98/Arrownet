@@ -24,10 +24,12 @@ import kotlinx.android.synthetic.main.chat_from.view.*
 import kotlinx.android.synthetic.main.chat_to.view.*
 import kotlinx.android.synthetic.main.chat_toolbar.*
 import java.util.*
+import kotlin.properties.Delegates
 
 class ChatLogActivity : AppCompatActivity() {
     val adapter = GroupAdapter<ViewHolder>()
     var toUser: User? = null
+    private var checkTranslatedMessage: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,6 +57,7 @@ class ChatLogActivity : AppCompatActivity() {
         listenForMessages()
 
         translate_switch.setOnCheckedChangeListener { _, p1 ->
+            checkTranslatedMessage = p1
             listenForTranslatedMessages(p1)
         }
 
@@ -172,22 +175,33 @@ class ChatLogActivity : AppCompatActivity() {
         ref.addChildEventListener(object : ChildEventListener {
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
                 val chatMessage = snapshot.getValue(ChatMessage::class.java)
-                translateText()
 
                 if (chatMessage != null) {
+                    translateText()
                     if (chatMessage.fromID == FirebaseAuth.getInstance().uid) {
                         val currentUser = HomePage.currentUser ?: return
                         adapter.add(ChatToItem(chatMessage.text, currentUser))
                     }
                     else {
-                        adapter.add(ChatFromItem(chatMessage.text, toUser!!))
+                        if(checkTranslatedMessage) {
+                            return
+                        }
+                        else {
+                            adapter.add(ChatFromItem(chatMessage.text, toUser!!))
+                        }
                     }
                 }
                 recyclerview_chat.scrollToPosition(adapter.itemCount - 1)
             }
 
             override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
-                // nada
+                val changedChatMessage = snapshot.getValue(ChatMessage::class.java)
+
+                if(changedChatMessage != null) {
+                    if (checkTranslatedMessage) {
+                        adapter.add(ChatFromItem(changedChatMessage.translatedMessage, toUser!!))
+                    }
+                }
             }
 
             override fun onChildRemoved(snapshot: DataSnapshot) {

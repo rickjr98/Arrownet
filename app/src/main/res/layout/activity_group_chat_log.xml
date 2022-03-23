@@ -17,6 +17,7 @@
         android:hint="Enter Message"
         android:inputType="textPersonName"
         android:minHeight="48dp"
+        android:singleLine="false"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/group_chat_send_button"
         app:layout_constraintStart_toStartOf="parent" />
