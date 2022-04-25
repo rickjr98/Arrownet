@@ -23,6 +23,7 @@ import kotlinx.android.synthetic.main.activity_home_page.*
 import kotlinx.android.synthetic.main.chat_from.view.*
 import kotlinx.android.synthetic.main.chat_to.view.*
 import kotlinx.android.synthetic.main.chat_toolbar.*
+import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.properties.Delegates
 
@@ -67,6 +68,10 @@ class ChatLogActivity : AppCompatActivity() {
             } else {
                 return@setOnClickListener
             }
+        }
+
+        image_message_button.setOnClickListener {
+            // Image selection
         }
     }
 
@@ -134,9 +139,10 @@ class ChatLogActivity : AppCompatActivity() {
         val text: String,
         val fromID: String,
         val toID: String,
-        var translatedMessage: String
+        var translatedMessage: String,
+        val timestamp: Long
     ) {
-        constructor() : this("", "", "", "", "")
+        constructor() : this("", "", "", "", "", -1)
     }
 
     private fun sendMessage() {
@@ -152,7 +158,7 @@ class ChatLogActivity : AppCompatActivity() {
         val reference = FirebaseDatabase.getInstance().getReference("messages/$fromID/$toID").push()
         val toReference = FirebaseDatabase.getInstance().getReference("messages/$toID/$fromID").push()
 
-        val chatMessage = ChatMessage(reference.key!!, text, fromID, toID, "")
+        val chatMessage = ChatMessage(reference.key!!, text, fromID, toID, "", System.currentTimeMillis() / 1000)
         reference.setValue(chatMessage).addOnSuccessListener {
             newMessageText.text.clear()
             recyclerview_chat.scrollToPosition(adapter.itemCount - 1)

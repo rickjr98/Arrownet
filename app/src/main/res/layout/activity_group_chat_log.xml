@@ -10,8 +10,8 @@
         android:id="@+id/group_chat_text"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
+        android:layout_marginStart="3dp"
+        android:layout_marginEnd="3dp"
         android:layout_marginBottom="8dp"
         android:ems="10"
         android:hint="Enter Message"
@@ -20,14 +20,15 @@
         android:singleLine="false"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/group_chat_send_button"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toEndOf="@+id/group_image_message_button" />
 
     <Button
         android:id="@+id/group_chat_send_button"
         android:layout_width="73dp"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
+        android:layout_marginEnd="3dp"
         android:layout_marginBottom="8dp"
+        android:background="@drawable/rounded_corners"
         android:text="Send"
         app:backgroundTint="#053907"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -37,11 +38,26 @@
         android:id="@+id/group_chat_recyclerview"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginBottom="3dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toTopOf="@+id/group_chat_text"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:stackFromEnd="true" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/group_image_message_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="3dp"
+        android:clickable="true"
+        app:backgroundTint="#053907"
+        app:fabCustomSize="48dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/group_chat_text"
+        app:srcCompat="@android:drawable/ic_menu_gallery"
+        app:tint="@color/white"
+        tools:ignore="SpeakableTextPresentCheck" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

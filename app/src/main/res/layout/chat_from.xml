@@ -30,4 +30,13 @@
         android:textColor="#FFFFFF"
         app:layout_constraintStart_toEndOf="@+id/userFromImage"
         app:layout_constraintTop_toTopOf="@+id/userFromImage" />
+
+    <TextView
+        android:id="@+id/userFromTimeStamp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TextView"
+        android:textSize="10sp"
+        app:layout_constraintEnd_toEndOf="@+id/userFromText"
+        app:layout_constraintTop_toBottomOf="@+id/userFromText" />
 </androidx.constraintlayout.widget.ConstraintLayout>

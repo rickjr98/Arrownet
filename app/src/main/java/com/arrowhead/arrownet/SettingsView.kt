@@ -1,8 +1,11 @@
 package com.arrowhead.arrownet
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -23,6 +26,7 @@ import java.util.*
 class SettingsView : AppCompatActivity() {
     companion object {
         val IMAGE_REQUEST_CODE = 100
+        val PERMISSION_CODE = 101
     }
 
     private lateinit var auth: FirebaseAuth
@@ -50,7 +54,18 @@ class SettingsView : AppCompatActivity() {
         setUpLanguageSelect()
 
         photo_button.setOnClickListener {
-            pickFromGallery()
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if(checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
+                    val permissions = arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
+                    requestPermissions(permissions, PERMISSION_CODE)
+                }
+                else {
+                    pickFromGallery()
+                }
+            }
+            else {
+                pickFromGallery()
+            }
         }
 
         save_button.setOnClickListener {
@@ -88,6 +103,23 @@ class SettingsView : AppCompatActivity() {
         val intent = Intent(Intent.ACTION_PICK)
         intent.type = "image/*"
         startActivityForResult(intent, IMAGE_REQUEST_CODE)
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        when(requestCode) {
+            PERMISSION_CODE -> {
+                if(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    pickFromGallery()
+                }
+                else {
+                    Toast.makeText(applicationContext, "Permission Denied", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
 
     var selectedPhotoUri: Uri? = null

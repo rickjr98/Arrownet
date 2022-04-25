@@ -39,8 +39,6 @@ class GroupChatLogActivity : AppCompatActivity() {
         uidList = intent.getSerializableExtra("UidList") as ArrayList<String>
         toUsers = intent.getSerializableExtra("toUsers") as HashMap<String, GroupMember>
 
-        Log.d("Contacts", contactsList.toString())
-
         group_chat_recyclerview.adapter = adapter
 
         supportActionBar?.displayOptions = ActionBar.DISPLAY_SHOW_CUSTOM
