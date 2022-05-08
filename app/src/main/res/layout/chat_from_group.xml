@@ -32,6 +32,8 @@
         android:id="@+id/userFromGroupText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="3dp"
+        android:layout_marginTop="17dp"
         android:background="@drawable/rounded_from_edge"
         android:maxWidth="240dp"
         android:paddingLeft="25dp"

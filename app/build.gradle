@@ -72,6 +72,9 @@ dependencies {
     implementation 'com.google.firebase:firebase-core:17.3.0'
     implementation 'com.google.mlkit:language-id:17.0.0'
     implementation 'com.google.mlkit:translate:17.0.0'
+
+    implementation 'com.fxn769:pix:1.5.4'
+    implementation 'com.iceteck.silicompressorr:silicompressorr:2.2.3'
 }
 
 apply plugin: 'com.google.gms.google-services'

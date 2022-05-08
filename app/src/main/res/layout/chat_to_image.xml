@@ -5,29 +5,29 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <TextView
-        android:id="@+id/userToText"
+    <ImageView
+        android:id="@+id/chatMessageImage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="3dp"
         android:layout_marginEnd="3dp"
         android:background="@drawable/rounded_to_edge"
-        android:maxWidth="240dp"
-        android:paddingLeft="8dp"
-        android:paddingTop="8dp"
+        android:paddingLeft="9dp"
+        android:paddingTop="10dp"
         android:paddingRight="25dp"
-        android:paddingBottom="8dp"
-        android:text="TextView"
-        android:textColor="#FFFFFF"
+        android:paddingBottom="10dp"
+        android:maxWidth="240dp"
+        android:maxHeight="240dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_launcher_background" />
 
     <TextView
-        android:id="@+id/userToTimeStamp"
+        android:id="@+id/chatMessageImageTimeStamp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="TextView"
         android:textSize="10sp"
-        app:layout_constraintEnd_toEndOf="@+id/userToText"
-        app:layout_constraintTop_toBottomOf="@+id/userToText" />
+        app:layout_constraintEnd_toEndOf="@+id/chatMessageImage"
+        app:layout_constraintTop_toBottomOf="@+id/chatMessageImage" />
 </androidx.constraintlayout.widget.ConstraintLayout>

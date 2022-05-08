@@ -7,6 +7,8 @@ import android.view.Menu
 import android.widget.Toast
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.widget.SwitchCompat
+import com.fxn.pix.Options
+import com.fxn.pix.Pix
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.google.mlkit.common.model.DownloadConditions
@@ -21,7 +23,9 @@ import kotlinx.android.synthetic.main.activity_chat_log.*
 import kotlinx.android.synthetic.main.activity_chat_log.view.*
 import kotlinx.android.synthetic.main.activity_home_page.*
 import kotlinx.android.synthetic.main.chat_from.view.*
+import kotlinx.android.synthetic.main.chat_from_image.view.*
 import kotlinx.android.synthetic.main.chat_to.view.*
+import kotlinx.android.synthetic.main.chat_to_image.view.*
 import kotlinx.android.synthetic.main.chat_toolbar.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -140,9 +144,11 @@ class ChatLogActivity : AppCompatActivity() {
         val fromID: String,
         val toID: String,
         var translatedMessage: String,
+        val type: String,
+        val imageUri: String,
         val timestamp: Long
     ) {
-        constructor() : this("", "", "", "", "", -1)
+        constructor() : this("", "", "", "", "", "", "", -1)
     }
 
     private fun sendMessage() {
@@ -158,7 +164,7 @@ class ChatLogActivity : AppCompatActivity() {
         val reference = FirebaseDatabase.getInstance().getReference("messages/$fromID/$toID").push()
         val toReference = FirebaseDatabase.getInstance().getReference("messages/$toID/$fromID").push()
 
-        val chatMessage = ChatMessage(reference.key!!, text, fromID, toID, "", System.currentTimeMillis() / 1000)
+        val chatMessage = ChatMessage(reference.key!!, text, fromID, toID, "", "text", "", System.currentTimeMillis() / 1000)
         reference.setValue(chatMessage).addOnSuccessListener {
             newMessageText.text.clear()
             recyclerview_chat.scrollToPosition(adapter.itemCount - 1)
@@ -185,15 +191,24 @@ class ChatLogActivity : AppCompatActivity() {
                 if (chatMessage != null) {
                     translateText()
                     if (chatMessage.fromID == FirebaseAuth.getInstance().uid) {
-                        val currentUser = HomePage.currentUser ?: return
-                        adapter.add(ChatToItem(chatMessage.text, currentUser))
+                        if(chatMessage.type == "text") {
+                            adapter.add(ChatToItem(chatMessage.text))
+                        }
+                        else {
+                            adapter.add(ChatToImageItem(chatMessage.imageUri))
+                        }
                     }
                     else {
                         if(checkTranslatedMessage) {
                             return
                         }
                         else {
-                            adapter.add(ChatFromItem(chatMessage.text, toUser!!))
+                            if(chatMessage.type == "text") {
+                                adapter.add(ChatFromItem(chatMessage.text, toUser!!))
+                            }
+                            else {
+                                adapter.add(ChatFromImageItem(chatMessage.imageUri, toUser!!))
+                            }
                         }
                     }
                 }
@@ -239,8 +254,7 @@ class ChatLogActivity : AppCompatActivity() {
 
                     if (chatMessage != null) {
                         if (chatMessage.fromID == FirebaseAuth.getInstance().uid) {
-                            val currentUser = HomePage.currentUser ?: return
-                            adapter.add(ChatToItem(chatMessage.text, currentUser))
+                            adapter.add(ChatToItem(chatMessage.text))
                         } else {
                             if (checkTranslate) {
                                 adapter.add(ChatFromItem(chatMessage.translatedMessage, toUser!!))
@@ -258,6 +272,20 @@ class ChatLogActivity : AppCompatActivity() {
             }
         })
     }
+
+    private fun pickImage() {
+        val options: Options = Options.init()
+            .setRequestCode(100)
+            .setCount(5)
+            .setFrontfacing(false)
+            .setSpanCount(4)
+            .setExcludeVideos(false)
+            .setVideoDurationLimitinSeconds(30)
+            .setScreenOrientation(Options.SCREEN_ORIENTATION_PORTRAIT)
+            .setPath("image/")
+
+        Pix.start(this@ChatLogActivity, options)
+    }
 }
 
 class ChatFromItem(val text: String, private val user: User): Item<ViewHolder>() {
@@ -274,16 +302,38 @@ class ChatFromItem(val text: String, private val user: User): Item<ViewHolder>()
     }
 }
 
-class ChatToItem(val text: String, private val user: User): Item<ViewHolder>() {
+class ChatToItem(val text: String): Item<ViewHolder>() {
     override fun bind(viewHolder: ViewHolder, position: Int) {
         viewHolder.itemView.userToText.text = text
-
-        val uri = user.flagUrl
-        val image = viewHolder.itemView.userToImage
-        Picasso.get().load(uri).into(image)
     }
 
     override fun getLayout(): Int {
         return R.layout.chat_to
+    }
+}
+
+class ChatToImageItem(val imageUri: String): Item<ViewHolder>() {
+    override fun bind(viewHolder: ViewHolder, position: Int) {
+        val image = viewHolder.itemView.chatMessageImage
+        Picasso.get().load(imageUri).into(image)
+    }
+
+    override fun getLayout(): Int {
+        return R.layout.chat_to_image
+    }
+}
+
+class ChatFromImageItem(val imageUri: String, private val user: User): Item<ViewHolder>() {
+    override fun bind(viewHolder: ViewHolder, position: Int) {
+        val uri = user.flagUrl
+        val image = viewHolder.itemView.userImageMessageFrom
+        Picasso.get().load(uri).into(image)
+
+        val imageMessage = viewHolder.itemView.imageMessageFrom
+        Picasso.get().load(imageUri).into(imageMessage)
+    }
+
+    override fun getLayout(): Int {
+        return R.layout.chat_from_image
     }
 }
