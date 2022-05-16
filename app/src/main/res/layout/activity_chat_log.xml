@@ -52,12 +52,12 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="3dp"
         android:clickable="true"
-        app:tint="@color/white"
         app:backgroundTint="#053907"
         app:fabCustomSize="48dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/newMessageText"
-        app:srcCompat="@android:drawable/ic_menu_gallery"
+        app:srcCompat="@android:drawable/ic_menu_camera"
+        app:tint="@color/white"
         tools:ignore="SpeakableTextPresentCheck" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

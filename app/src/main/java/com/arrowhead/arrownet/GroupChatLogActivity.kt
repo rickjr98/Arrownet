@@ -104,8 +104,7 @@ class GroupChatLogActivity : AppCompatActivity() {
 
                 if(chatMessage != null) {
                     if(chatMessage.fromID == FirebaseAuth.getInstance().uid) {
-                        val currentUser = HomePage.currentUser ?: return
-                        adapter.add(ChatToItem(chatMessage.text, currentUser))
+                        adapter.add(ChatToItem(chatMessage.text))
                     }
                     else {
                         val toUser: GroupMember? = toUsers[chatMessage.fromID]

@@ -1,14 +1,16 @@
 package com.arrowhead.arrownet
 
-import androidx.appcompat.app.AppCompatActivity
+import android.app.Activity
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
-import android.util.Log
-import android.view.Menu
 import android.widget.Toast
 import androidx.appcompat.app.ActionBar
-import androidx.appcompat.widget.SwitchCompat
+import androidx.appcompat.app.AppCompatActivity
 import com.fxn.pix.Options
 import com.fxn.pix.Pix
+import com.fxn.utility.PermUtil
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.google.mlkit.common.model.DownloadConditions
@@ -20,16 +22,11 @@ import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.activity_chat_log.*
-import kotlinx.android.synthetic.main.activity_chat_log.view.*
-import kotlinx.android.synthetic.main.activity_home_page.*
 import kotlinx.android.synthetic.main.chat_from.view.*
 import kotlinx.android.synthetic.main.chat_from_image.view.*
 import kotlinx.android.synthetic.main.chat_to.view.*
 import kotlinx.android.synthetic.main.chat_to_image.view.*
 import kotlinx.android.synthetic.main.chat_toolbar.*
-import java.text.SimpleDateFormat
-import java.util.*
-import kotlin.properties.Delegates
 
 class ChatLogActivity : AppCompatActivity() {
     val adapter = GroupAdapter<ViewHolder>()
@@ -58,7 +55,6 @@ class ChatLogActivity : AppCompatActivity() {
         Picasso.get().load(toUser?.photoUrl).into(profile_image)
         Picasso.get().load(HomePage.currentUser?.flagUrl).into(translate_image)
 
-        translateText()
         listenForMessages()
 
         translate_switch.setOnCheckedChangeListener { _, p1 ->
@@ -75,7 +71,45 @@ class ChatLogActivity : AppCompatActivity() {
         }
 
         image_message_button.setOnClickListener {
-            // Image selection
+            pickImage()
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if(resultCode == Activity.RESULT_OK && requestCode == 100) {
+            val returnValue = data?.getStringArrayListExtra(Pix.IMAGE_RESULTS)
+
+            val intent = Intent(this, SendMedia::class.java)
+            intent.putExtra("images", returnValue)
+            intent.putExtra("fromID", FirebaseAuth.getInstance().uid)
+            intent.putExtra("toID", toUser!!.uid)
+
+            if(Build.VERSION.SDK_INT > Build.VERSION_CODES.O) {
+                startForegroundService(intent)
+            }
+            else {
+                startService(intent)
+            }
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        when(requestCode) {
+            PermUtil.REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS -> {
+                if(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    pickImage()
+                }
+                else {
+                    Toast.makeText(this@ChatLogActivity, "Approve permissions to open images", Toast.LENGTH_SHORT).show()
+                }
+                return
+            }
         }
     }
 
@@ -92,7 +126,7 @@ class ChatLogActivity : AppCompatActivity() {
                     val key = it.key.toString()
 
                     if (chatMessage != null) {
-                        if (chatMessage.fromID == FirebaseAuth.getInstance().uid) {
+                        if (chatMessage.type == "image" || chatMessage.fromID == FirebaseAuth.getInstance().uid) {
                             return@forEach
                         } else {
                             val languageIdentifier = getClient()
@@ -275,14 +309,13 @@ class ChatLogActivity : AppCompatActivity() {
 
     private fun pickImage() {
         val options: Options = Options.init()
-            .setRequestCode(100)
-            .setCount(5)
-            .setFrontfacing(false)
-            .setSpanCount(4)
-            .setExcludeVideos(false)
-            .setVideoDurationLimitinSeconds(30)
-            .setScreenOrientation(Options.SCREEN_ORIENTATION_PORTRAIT)
-            .setPath("image/")
+            .setRequestCode(100) //Request code for activity results
+            .setCount(3) //Number of images to restict selection count
+            .setFrontfacing(false) //Front Facing camera on start
+            .setSpanCount(4) //Span count for gallery min 1 & max 5
+            .setVideoDurationLimitinSeconds(30) //Duration for video recording
+            .setScreenOrientation(Options.SCREEN_ORIENTATION_PORTRAIT) //Orientaion
+            .setPath("/image/")
 
         Pix.start(this@ChatLogActivity, options)
     }
