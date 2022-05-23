@@ -4,10 +4,12 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.ActionBar
-import androidx.appcompat.app.AppCompatActivity
+import com.bumptech.glide.Glide
 import com.fxn.pix.Options
 import com.fxn.pix.Pix
 import com.fxn.utility.PermUtil
@@ -309,13 +311,12 @@ class ChatLogActivity : AppCompatActivity() {
 
     private fun pickImage() {
         val options: Options = Options.init()
-            .setRequestCode(100) //Request code for activity results
-            .setCount(3) //Number of images to restict selection count
-            .setFrontfacing(false) //Front Facing camera on start
-            .setSpanCount(4) //Span count for gallery min 1 & max 5
-            .setVideoDurationLimitinSeconds(30) //Duration for video recording
-            .setScreenOrientation(Options.SCREEN_ORIENTATION_PORTRAIT) //Orientaion
-            .setPath("/image/")
+            .setRequestCode(100)
+            .setCount(5)
+            .setFrontfacing(false)
+            .setSpanCount(4)
+            .setScreenOrientation(Options.SCREEN_ORIENTATION_PORTRAIT)
+            .setPath("/Quiver/Media/Sent")
 
         Pix.start(this@ChatLogActivity, options)
     }
