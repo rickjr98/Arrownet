@@ -1,15 +1,19 @@
 package com.arrowhead.arrownet
 
 import android.app.Activity
+import android.content.ContentValues
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.MediaStore
+import android.view.View
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.ActionBar
-import com.bumptech.glide.Glide
 import com.fxn.pix.Options
 import com.fxn.pix.Pix
 import com.fxn.utility.PermUtil
@@ -29,11 +33,15 @@ import kotlinx.android.synthetic.main.chat_from_image.view.*
 import kotlinx.android.synthetic.main.chat_to.view.*
 import kotlinx.android.synthetic.main.chat_to_image.view.*
 import kotlinx.android.synthetic.main.chat_toolbar.*
+import java.io.ByteArrayOutputStream
 
 class ChatLogActivity : AppCompatActivity() {
     val adapter = GroupAdapter<ViewHolder>()
     var toUser: User? = null
     private var checkTranslatedMessage: Boolean = false
+    private var fileUri: Uri? = null
+    private val MY_CAMERA_REQUEST_CODE = 7171
+    private var thumbnail: Bitmap? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -73,27 +81,13 @@ class ChatLogActivity : AppCompatActivity() {
         }
 
         image_message_button.setOnClickListener {
-            pickImage()
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        if(resultCode == Activity.RESULT_OK && requestCode == 100) {
-            val returnValue = data?.getStringArrayListExtra(Pix.IMAGE_RESULTS)
-
-            val intent = Intent(this, SendMedia::class.java)
-            intent.putExtra("images", returnValue)
-            intent.putExtra("fromID", FirebaseAuth.getInstance().uid)
-            intent.putExtra("toID", toUser!!.uid)
-
-            if(Build.VERSION.SDK_INT > Build.VERSION_CODES.O) {
-                startForegroundService(intent)
-            }
-            else {
-                startService(intent)
-            }
+            val values: ContentValues? = null
+            values!!.put(MediaStore.Images.Media.TITLE, "New Picture")
+            values.put(MediaStore.Images.Media.DESCRIPTION, "From Camera")
+            fileUri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+            intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri)
+            startActivityForResult(intent, MY_CAMERA_REQUEST_CODE)
         }
     }
 
@@ -102,16 +96,17 @@ class ChatLogActivity : AppCompatActivity() {
         permissions: Array<out String>,
         grantResults: IntArray
     ) {
-        when(requestCode) {
-            PermUtil.REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS -> {
-                if(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    pickImage()
-                }
-                else {
-                    Toast.makeText(this@ChatLogActivity, "Approve permissions to open images", Toast.LENGTH_SHORT).show()
-                }
-                return
-            }
+        // Start over
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if(resultCode == Activity.RESULT_OK && requestCode == MY_CAMERA_REQUEST_CODE) {
+            thumbnail = MediaStore.Images.Media
+                .getBitmap(contentResolver, fileUri)
+            image_preview.setImageBitmap(thumbnail)
+            image_preview.visibility = View.VISIBLE
         }
     }
 
@@ -307,18 +302,6 @@ class ChatLogActivity : AppCompatActivity() {
                 // Nada
             }
         })
-    }
-
-    private fun pickImage() {
-        val options: Options = Options.init()
-            .setRequestCode(100)
-            .setCount(5)
-            .setFrontfacing(false)
-            .setSpanCount(4)
-            .setScreenOrientation(Options.SCREEN_ORIENTATION_PORTRAIT)
-            .setPath("/Quiver/Media/Sent")
-
-        Pix.start(this@ChatLogActivity, options)
     }
 }
 
