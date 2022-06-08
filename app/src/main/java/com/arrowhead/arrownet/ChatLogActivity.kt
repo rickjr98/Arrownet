@@ -14,9 +14,6 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.ActionBar
-import com.fxn.pix.Options
-import com.fxn.pix.Pix
-import com.fxn.utility.PermUtil
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.google.mlkit.common.model.DownloadConditions
@@ -81,9 +78,10 @@ class ChatLogActivity : AppCompatActivity() {
         }
 
         image_message_button.setOnClickListener {
-            val values: ContentValues? = null
-            values!!.put(MediaStore.Images.Media.TITLE, "New Picture")
-            values.put(MediaStore.Images.Media.DESCRIPTION, "From Camera")
+            val values = ContentValues().apply {
+                put(MediaStore.Images.Media.TITLE, "New Picture")
+                put(MediaStore.Images.Media.DESCRIPTION, "From Camera")
+            }
             fileUri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
             intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
             intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri)
