@@ -1,21 +1,29 @@
 package com.arrowhead.arrownet
 
+import android.Manifest
 import android.app.Activity
 import android.content.ContentValues
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
+import android.opengl.Visibility
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.ActionBar
+import androidx.core.view.isGone
+import androidx.core.view.isInvisible
+import androidx.core.view.isVisible
+import com.arrowhead.arrownet.SettingsView.Companion.PERMISSION_CODE
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import com.google.firebase.storage.FirebaseStorage
 import com.google.mlkit.common.model.DownloadConditions
 import com.google.mlkit.nl.languageid.LanguageIdentification.getClient
 import com.google.mlkit.nl.translate.Translation
@@ -31,6 +39,7 @@ import kotlinx.android.synthetic.main.chat_to.view.*
 import kotlinx.android.synthetic.main.chat_to_image.view.*
 import kotlinx.android.synthetic.main.chat_toolbar.*
 import java.io.ByteArrayOutputStream
+import java.util.*
 
 class ChatLogActivity : AppCompatActivity() {
     val adapter = GroupAdapter<ViewHolder>()
@@ -70,23 +79,39 @@ class ChatLogActivity : AppCompatActivity() {
         }
 
         sendButton.setOnClickListener {
-            if (newMessageText.text.isNotEmpty()) {
+            if(newMessageText.text.isNotEmpty() || image_preview.isVisible) {
                 sendMessage()
-            } else {
+            }
+            else {
                 return@setOnClickListener
             }
         }
 
         image_message_button.setOnClickListener {
-            val values = ContentValues().apply {
-                put(MediaStore.Images.Media.TITLE, "New Picture")
-                put(MediaStore.Images.Media.DESCRIPTION, "From Camera")
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if(checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_DENIED) {
+                    val permissions = arrayOf(Manifest.permission.CAMERA)
+                    requestPermissions(permissions, PERMISSION_CODE)
+                }
+                else {
+                    takePicture()
+                }
             }
-            fileUri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
-            intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri)
-            startActivityForResult(intent, MY_CAMERA_REQUEST_CODE)
+            else {
+                takePicture()
+            }
         }
+    }
+
+    private fun takePicture() {
+        val values = ContentValues().apply {
+            put(MediaStore.Images.Media.TITLE, "New Picture")
+            put(MediaStore.Images.Media.DESCRIPTION, "From Camera")
+        }
+        fileUri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+        intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri)
+        startActivityForResult(intent, MY_CAMERA_REQUEST_CODE)
     }
 
     override fun onRequestPermissionsResult(
@@ -94,7 +119,16 @@ class ChatLogActivity : AppCompatActivity() {
         permissions: Array<out String>,
         grantResults: IntArray
     ) {
-        // Start over
+        when(requestCode) {
+            PERMISSION_CODE -> {
+                if(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    takePicture()
+                }
+                else {
+                    Toast.makeText(applicationContext, "Permission Denied", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -183,8 +217,7 @@ class ChatLogActivity : AppCompatActivity() {
     private fun sendMessage() {
         val text = newMessageText.text.toString()
         val fromID = FirebaseAuth.getInstance().uid
-        val user = intent.getParcelableExtra<User>(NewMessageActivity.USER_KEY)
-        val toID = user!!.uid
+        val toID = toUser!!.uid
 
         if (fromID == null) {
             return
@@ -193,18 +226,48 @@ class ChatLogActivity : AppCompatActivity() {
         val reference = FirebaseDatabase.getInstance().getReference("messages/$fromID/$toID").push()
         val toReference = FirebaseDatabase.getInstance().getReference("messages/$toID/$fromID").push()
 
-        val chatMessage = ChatMessage(reference.key!!, text, fromID, toID, "", "text", "", System.currentTimeMillis() / 1000)
-        reference.setValue(chatMessage).addOnSuccessListener {
-            newMessageText.text.clear()
-            recyclerview_chat.scrollToPosition(adapter.itemCount - 1)
+        if(text.isNotEmpty()) {
+            val chatMessage = ChatMessage(reference.key!!, text, fromID, toID, "", "text", "", System.currentTimeMillis() / 1000)
+            reference.setValue(chatMessage).addOnSuccessListener {
+                newMessageText.text.clear()
+                recyclerview_chat.scrollToPosition(adapter.itemCount - 1)
+            }
+            toReference.setValue(chatMessage)
+
+            val latestMessageRef = FirebaseDatabase.getInstance().getReference("latest-messages/$fromID/$toID")
+            latestMessageRef.setValue(chatMessage)
+
+            val latestMessageToRef = FirebaseDatabase.getInstance().getReference("latest-messages/$toID/$fromID")
+            latestMessageToRef.setValue(chatMessage)
         }
-        toReference.setValue(chatMessage)
+        else if(image_preview.isVisible) {
+            if(fileUri == null) {
+                return
+            }
+            val filename = UUID.randomUUID().toString()
+            val ref = FirebaseStorage.getInstance().getReference("/images/$filename")
 
-        val latestMessageRef = FirebaseDatabase.getInstance().getReference("latest-messages/$fromID/$toID")
-        latestMessageRef.setValue(chatMessage)
+            ref.putFile(fileUri!!)
+                .addOnSuccessListener {
+                    Log.d("RegisterActivity","Successfully uploaded image: ${it.metadata?.path}")
 
-        val latestMessageToRef = FirebaseDatabase.getInstance().getReference("latest-messages/$toID/$fromID")
-        latestMessageToRef.setValue(chatMessage)
+                    ref.downloadUrl.addOnSuccessListener {
+                        Log.d("RegisterActivity","File Location: $it")
+                        val chatMessage = ChatMessage(reference.key!!, "", fromID, toID, "", "image", it.toString(), System.currentTimeMillis() / 1000)
+                        reference.setValue(chatMessage).addOnSuccessListener {
+                            image_preview.visibility = View.GONE
+                            recyclerview_chat.scrollToPosition(adapter.itemCount - 1)
+                        }
+                        toReference.setValue(chatMessage)
+
+                        val latestMessageRef = FirebaseDatabase.getInstance().getReference("latest-messages/$fromID/$toID")
+                        latestMessageRef.setValue(chatMessage)
+
+                        val latestMessageToRef = FirebaseDatabase.getInstance().getReference("latest-messages/$toID/$fromID")
+                        latestMessageToRef.setValue(chatMessage)
+                    }
+                }
+        }
     }
 
     private fun listenForMessages() {
@@ -283,7 +346,12 @@ class ChatLogActivity : AppCompatActivity() {
 
                     if (chatMessage != null) {
                         if (chatMessage.fromID == FirebaseAuth.getInstance().uid) {
-                            adapter.add(ChatToItem(chatMessage.text))
+                            if(chatMessage.type == "text") {
+                                adapter.add(ChatToItem(chatMessage.text))
+                            }
+                            else {
+                                adapter.add(ChatToImageItem(chatMessage.imageUri))
+                            }
                         } else {
                             if (checkTranslate) {
                                 adapter.add(ChatFromItem(chatMessage.translatedMessage, toUser!!))

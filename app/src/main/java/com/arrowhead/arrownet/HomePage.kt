@@ -70,7 +70,12 @@ class HomePage : AppCompatActivity() {
         var chatPartnerUser: User? = null
         lateinit var name: String
         override fun bind(viewHolder: ViewHolder, position: Int) {
-            viewHolder.itemView.latest_message_text.text = chatMessage.text
+            if(chatMessage.type == "text") {
+                viewHolder.itemView.latest_message_text.text = chatMessage.text
+            }
+            else {
+                viewHolder.itemView.latest_message_text.text = "IMAGE"
+            }
 
             val chatPartnerID: String
             if(chatMessage.fromID == FirebaseAuth.getInstance().uid) {
