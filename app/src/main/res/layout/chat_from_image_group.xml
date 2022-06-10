@@ -5,8 +5,19 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/groupImageMessageFrom"
+        android:layout_width="240dp"
+        android:layout_height="240dp"
+        android:layout_marginStart="3dp"
+        android:scaleType="centerCrop"
+        app:layout_constraintStart_toEndOf="@+id/userImageGroupMessageFrom"
+        app:layout_constraintTop_toTopOf="@+id/userImageGroupMessageFrom"
+        app:shapeAppearanceOverlay="@style/RoundedEdges"
+        app:srcCompat="@drawable/ic_launcher_background" />
+
     <de.hdodenhof.circleimageview.CircleImageView
-        android:id="@+id/userImageMessageFrom"
+        android:id="@+id/userImageGroupMessageFrom"
         android:layout_width="35dp"
         android:layout_height="35dp"
         android:layout_marginStart="8dp"
@@ -15,23 +26,11 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <com.google.android.material.imageview.ShapeableImageView
-        android:id="@+id/imageMessageFrom"
-        android:layout_width="240dp"
-        android:layout_height="240dp"
-        android:layout_marginStart="3dp"
-        android:scaleType="centerCrop"
-        app:layout_constraintStart_toEndOf="@+id/userImageMessageFrom"
-        app:layout_constraintTop_toTopOf="@+id/userImageMessageFrom"
-        app:shapeAppearanceOverlay="@style/RoundedEdges"
-        app:srcCompat="@drawable/ic_launcher_background" />
-
     <TextView
-        android:id="@+id/imageMessageFromTimeStamp"
+        android:id="@+id/imageMessageGroupFrom"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="TextView"
-        android:textSize="10sp"
-        app:layout_constraintEnd_toEndOf="@+id/imageMessageFrom"
-        app:layout_constraintTop_toBottomOf="@+id/imageMessageFrom" />
+        app:layout_constraintEnd_toEndOf="@+id/groupImageMessageFrom"
+        app:layout_constraintTop_toBottomOf="@+id/groupImageMessageFrom" />
 </androidx.constraintlayout.widget.ConstraintLayout>

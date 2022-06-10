@@ -201,16 +201,7 @@ class ChatLogActivity : AppCompatActivity() {
         })
     }
 
-    class ChatMessage(
-        val id: String,
-        val text: String,
-        val fromID: String,
-        val toID: String,
-        var translatedMessage: String,
-        val type: String,
-        val imageUri: String,
-        val timestamp: Long
-    ) {
+    class ChatMessage(val id: String, val text: String, val fromID: String, val toID: String, var translatedMessage: String, val type: String, val imageUri: String, val timestamp: Long) {
         constructor() : this("", "", "", "", "", "", "", -1)
     }
 
@@ -226,7 +217,44 @@ class ChatLogActivity : AppCompatActivity() {
         val reference = FirebaseDatabase.getInstance().getReference("messages/$fromID/$toID").push()
         val toReference = FirebaseDatabase.getInstance().getReference("messages/$toID/$fromID").push()
 
-        if(text.isNotEmpty()) {
+        if(text.isNotEmpty() && image_preview.isVisible) {
+            val chatMessage = ChatMessage(reference.key!!, text, fromID, toID, "", "text", "", System.currentTimeMillis() / 1000)
+            reference.setValue(chatMessage).addOnSuccessListener {
+                newMessageText.text.clear()
+                recyclerview_chat.scrollToPosition(adapter.itemCount - 1)
+            }
+            toReference.setValue(chatMessage)
+
+            val latestMessageRef = FirebaseDatabase.getInstance().getReference("latest-messages/$fromID/$toID")
+            latestMessageRef.setValue(chatMessage)
+
+            val latestMessageToRef = FirebaseDatabase.getInstance().getReference("latest-messages/$toID/$fromID")
+            latestMessageToRef.setValue(chatMessage)
+
+            if(fileUri == null) {
+                return
+            }
+            val filename = UUID.randomUUID().toString()
+            val ref = FirebaseStorage.getInstance().getReference("/images/$filename")
+
+            ref.putFile(fileUri!!)
+                .addOnSuccessListener {
+                    Log.d("RegisterActivity","Successfully uploaded image: ${it.metadata?.path}")
+
+                    ref.downloadUrl.addOnSuccessListener {
+                        Log.d("RegisterActivity","File Location: $it")
+                        val chatMessage = ChatMessage(reference.key!!, "", fromID, toID, "", "image", it.toString(), System.currentTimeMillis() / 1000)
+                        reference.setValue(chatMessage).addOnSuccessListener {
+                            image_preview.visibility = View.GONE
+                            recyclerview_chat.scrollToPosition(adapter.itemCount - 1)
+                        }
+                        toReference.setValue(chatMessage)
+                        latestMessageRef.setValue(chatMessage)
+                        latestMessageToRef.setValue(chatMessage)
+                    }
+                }
+        }
+        else if(text.isNotEmpty()) {
             val chatMessage = ChatMessage(reference.key!!, text, fromID, toID, "", "text", "", System.currentTimeMillis() / 1000)
             reference.setValue(chatMessage).addOnSuccessListener {
                 newMessageText.text.clear()
@@ -354,9 +382,19 @@ class ChatLogActivity : AppCompatActivity() {
                             }
                         } else {
                             if (checkTranslate) {
-                                adapter.add(ChatFromItem(chatMessage.translatedMessage, toUser!!))
+                                if(chatMessage.type == "text") {
+                                    adapter.add(ChatFromItem(chatMessage.translatedMessage, toUser!!))
+                                }
+                                else {
+                                    adapter.add(ChatFromImageItem(chatMessage.imageUri, toUser!!))
+                                }
                             } else {
-                                adapter.add(ChatFromItem(chatMessage.text, toUser!!))
+                                if(chatMessage.type == "text") {
+                                    adapter.add(ChatFromItem(chatMessage.text, toUser!!))
+                                }
+                                else {
+                                    adapter.add(ChatFromImageItem(chatMessage.imageUri, toUser!!))
+                                }
                             }
                         }
                     }
