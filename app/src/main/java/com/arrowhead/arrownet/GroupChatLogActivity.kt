@@ -331,10 +331,10 @@ class GroupChatLogActivity : AppCompatActivity() {
                     if (chatMessage != null) {
                         if (chatMessage.fromID == FirebaseAuth.getInstance().uid) {
                             if(chatMessage.type == "text") {
-                                adapter.add(ChatToItem(chatMessage.text))
+                                adapter.add(ChatToItem(chatMessage.text, chatMessage.timestamp))
                             }
                             else {
-                                adapter.add(ChatToImageItem(chatMessage.imageUri))
+                                adapter.add(ChatToImageItem(chatMessage.imageUri, chatMessage.timestamp))
                             }
                         } else {
                             if (checkTranslate) {
@@ -366,10 +366,10 @@ class GroupChatLogActivity : AppCompatActivity() {
                     translateText()
                     if (chatMessage.fromID == FirebaseAuth.getInstance().uid) {
                         if(chatMessage.type == "text") {
-                            adapter.add(ChatToItem(chatMessage.text))
+                            adapter.add(ChatToItem(chatMessage.text, chatMessage.timestamp))
                         }
                         else {
-                            adapter.add(ChatToImageItem(chatMessage.imageUri))
+                            adapter.add(ChatToImageItem(chatMessage.imageUri, chatMessage.timestamp))
                         }
                     }
                     else {

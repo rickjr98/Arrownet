@@ -14,12 +14,15 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
 import android.view.View
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.ActionBar
 import androidx.core.view.isGone
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
+import com.arrowhead.arrownet.SettingsView.Companion.IMAGE_REQUEST_CODE
 import com.arrowhead.arrownet.SettingsView.Companion.PERMISSION_CODE
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
@@ -39,6 +42,8 @@ import kotlinx.android.synthetic.main.chat_to.view.*
 import kotlinx.android.synthetic.main.chat_to_image.view.*
 import kotlinx.android.synthetic.main.chat_toolbar.*
 import java.io.ByteArrayOutputStream
+import java.text.DateFormat
+import java.text.SimpleDateFormat
 import java.util.*
 
 class ChatLogActivity : AppCompatActivity() {
@@ -47,7 +52,14 @@ class ChatLogActivity : AppCompatActivity() {
     private var checkTranslatedMessage: Boolean = false
     private var fileUri: Uri? = null
     private val MY_CAMERA_REQUEST_CODE = 7171
+    private val IMAGE_REQUEST_CODE = 100
     private var thumbnail: Bitmap? = null
+    private var clicked: Boolean = false
+
+    private val rotateOpen: Animation by lazy { AnimationUtils.loadAnimation(this, R.anim.rotate_open) }
+    private val rotateClose: Animation by lazy { AnimationUtils.loadAnimation(this, R.anim.rotate_close) }
+    private val fromBottom: Animation by lazy { AnimationUtils.loadAnimation(this, R.anim.from_bottom) }
+    private val toBottom: Animation by lazy { AnimationUtils.loadAnimation(this, R.anim.to_bottom) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -88,6 +100,10 @@ class ChatLogActivity : AppCompatActivity() {
         }
 
         image_message_button.setOnClickListener {
+            onImageButtonPressed()
+        }
+
+        take_picture_button.setOnClickListener {
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 if(checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_DENIED) {
                     val permissions = arrayOf(Manifest.permission.CAMERA)
@@ -100,6 +116,57 @@ class ChatLogActivity : AppCompatActivity() {
             else {
                 takePicture()
             }
+        }
+
+        choose_image_button.setOnClickListener {
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if(checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
+                    val permissions = arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
+                    requestPermissions(permissions, PERMISSION_CODE)
+                }
+                else {
+                    pickFromGallery()
+                }
+            }
+            else {
+                pickFromGallery()
+            }
+        }
+    }
+
+    private fun pickFromGallery() {
+        val intent = Intent(Intent.ACTION_PICK)
+        intent.type = "image/*"
+        startActivityForResult(intent, IMAGE_REQUEST_CODE)
+    }
+
+    private fun onImageButtonPressed() {
+        setVisibility()
+        setAnimation()
+        clicked = !clicked
+    }
+
+    private fun setAnimation() {
+        if(!clicked) {
+            take_picture_button.startAnimation(fromBottom)
+            choose_image_button.startAnimation(fromBottom)
+            image_message_button.startAnimation(rotateOpen)
+        }
+        else {
+            take_picture_button.startAnimation(toBottom)
+            choose_image_button.startAnimation(toBottom)
+            image_message_button.startAnimation(rotateClose)
+        }
+    }
+
+    private fun setVisibility() {
+        if(!clicked) {
+            take_picture_button.visibility = View.VISIBLE
+            choose_image_button.visibility = View.VISIBLE
+        }
+        else {
+            take_picture_button.visibility = View.INVISIBLE
+            choose_image_button.visibility = View.INVISIBLE
         }
     }
 
@@ -123,6 +190,7 @@ class ChatLogActivity : AppCompatActivity() {
             PERMISSION_CODE -> {
                 if(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     takePicture()
+                    pickFromGallery()
                 }
                 else {
                     Toast.makeText(applicationContext, "Permission Denied", Toast.LENGTH_SHORT).show()
@@ -138,6 +206,13 @@ class ChatLogActivity : AppCompatActivity() {
             thumbnail = MediaStore.Images.Media
                 .getBitmap(contentResolver, fileUri)
             image_preview.setImageBitmap(thumbnail)
+            image_preview.visibility = View.VISIBLE
+        }
+        else if(resultCode == Activity.RESULT_OK && requestCode == IMAGE_REQUEST_CODE) {
+            if (data != null) {
+                fileUri = data.data
+            }
+            image_preview.setImageURI(fileUri)
             image_preview.visibility = View.VISIBLE
         }
     }
@@ -218,7 +293,7 @@ class ChatLogActivity : AppCompatActivity() {
         val toReference = FirebaseDatabase.getInstance().getReference("messages/$toID/$fromID").push()
 
         if(text.isNotEmpty() && image_preview.isVisible) {
-            val chatMessage = ChatMessage(reference.key!!, text, fromID, toID, "", "text", "", System.currentTimeMillis() / 1000)
+            val chatMessage = ChatMessage(reference.key!!, text, fromID, toID, "", "text", "", System.currentTimeMillis())
             reference.setValue(chatMessage).addOnSuccessListener {
                 newMessageText.text.clear()
                 recyclerview_chat.scrollToPosition(adapter.itemCount - 1)
@@ -243,7 +318,7 @@ class ChatLogActivity : AppCompatActivity() {
 
                     ref.downloadUrl.addOnSuccessListener {
                         Log.d("RegisterActivity","File Location: $it")
-                        val chatMessage = ChatMessage(reference.key!!, "", fromID, toID, "", "image", it.toString(), System.currentTimeMillis() / 1000)
+                        val chatMessage = ChatMessage(reference.key!!, "", fromID, toID, "", "image", it.toString(), System.currentTimeMillis())
                         reference.setValue(chatMessage).addOnSuccessListener {
                             image_preview.visibility = View.GONE
                             recyclerview_chat.scrollToPosition(adapter.itemCount - 1)
@@ -255,7 +330,7 @@ class ChatLogActivity : AppCompatActivity() {
                 }
         }
         else if(text.isNotEmpty()) {
-            val chatMessage = ChatMessage(reference.key!!, text, fromID, toID, "", "text", "", System.currentTimeMillis() / 1000)
+            val chatMessage = ChatMessage(reference.key!!, text, fromID, toID, "", "text", "", System.currentTimeMillis())
             reference.setValue(chatMessage).addOnSuccessListener {
                 newMessageText.text.clear()
                 recyclerview_chat.scrollToPosition(adapter.itemCount - 1)
@@ -281,7 +356,7 @@ class ChatLogActivity : AppCompatActivity() {
 
                     ref.downloadUrl.addOnSuccessListener {
                         Log.d("RegisterActivity","File Location: $it")
-                        val chatMessage = ChatMessage(reference.key!!, "", fromID, toID, "", "image", it.toString(), System.currentTimeMillis() / 1000)
+                        val chatMessage = ChatMessage(reference.key!!, "", fromID, toID, "", "image", it.toString(), System.currentTimeMillis())
                         reference.setValue(chatMessage).addOnSuccessListener {
                             image_preview.visibility = View.GONE
                             recyclerview_chat.scrollToPosition(adapter.itemCount - 1)
@@ -312,10 +387,10 @@ class ChatLogActivity : AppCompatActivity() {
                     translateText()
                     if (chatMessage.fromID == FirebaseAuth.getInstance().uid) {
                         if(chatMessage.type == "text") {
-                            adapter.add(ChatToItem(chatMessage.text))
+                            adapter.add(ChatToItem(chatMessage.text, chatMessage.timestamp))
                         }
                         else {
-                            adapter.add(ChatToImageItem(chatMessage.imageUri))
+                            adapter.add(ChatToImageItem(chatMessage.imageUri, chatMessage.timestamp))
                         }
                     }
                     else {
@@ -324,10 +399,10 @@ class ChatLogActivity : AppCompatActivity() {
                         }
                         else {
                             if(chatMessage.type == "text") {
-                                adapter.add(ChatFromItem(chatMessage.text, toUser!!))
+                                adapter.add(ChatFromItem(chatMessage.text, toUser!!, chatMessage.timestamp))
                             }
                             else {
-                                adapter.add(ChatFromImageItem(chatMessage.imageUri, toUser!!))
+                                adapter.add(ChatFromImageItem(chatMessage.imageUri, toUser!!, chatMessage.timestamp))
                             }
                         }
                     }
@@ -340,7 +415,7 @@ class ChatLogActivity : AppCompatActivity() {
 
                 if(changedChatMessage != null) {
                     if (checkTranslatedMessage) {
-                        adapter.add(ChatFromItem(changedChatMessage.translatedMessage, toUser!!))
+                        adapter.add(ChatFromItem(changedChatMessage.translatedMessage, toUser!!, changedChatMessage.timestamp))
                     }
                 }
             }
@@ -375,25 +450,25 @@ class ChatLogActivity : AppCompatActivity() {
                     if (chatMessage != null) {
                         if (chatMessage.fromID == FirebaseAuth.getInstance().uid) {
                             if(chatMessage.type == "text") {
-                                adapter.add(ChatToItem(chatMessage.text))
+                                adapter.add(ChatToItem(chatMessage.text, chatMessage.timestamp))
                             }
                             else {
-                                adapter.add(ChatToImageItem(chatMessage.imageUri))
+                                adapter.add(ChatToImageItem(chatMessage.imageUri, chatMessage.timestamp))
                             }
                         } else {
                             if (checkTranslate) {
                                 if(chatMessage.type == "text") {
-                                    adapter.add(ChatFromItem(chatMessage.translatedMessage, toUser!!))
+                                    adapter.add(ChatFromItem(chatMessage.translatedMessage, toUser!!, chatMessage.timestamp))
                                 }
                                 else {
-                                    adapter.add(ChatFromImageItem(chatMessage.imageUri, toUser!!))
+                                    adapter.add(ChatFromImageItem(chatMessage.imageUri, toUser!!, chatMessage.timestamp))
                                 }
                             } else {
                                 if(chatMessage.type == "text") {
-                                    adapter.add(ChatFromItem(chatMessage.text, toUser!!))
+                                    adapter.add(ChatFromItem(chatMessage.text, toUser!!, chatMessage.timestamp))
                                 }
                                 else {
-                                    adapter.add(ChatFromImageItem(chatMessage.imageUri, toUser!!))
+                                    adapter.add(ChatFromImageItem(chatMessage.imageUri, toUser!!, chatMessage.timestamp))
                                 }
                             }
                         }
@@ -409,13 +484,17 @@ class ChatLogActivity : AppCompatActivity() {
     }
 }
 
-class ChatFromItem(val text: String, private val user: User): Item<ViewHolder>() {
+class ChatFromItem(val text: String, private val user: User, val timestamp: Long): Item<ViewHolder>() {
     override fun bind(viewHolder: ViewHolder, position: Int) {
         viewHolder.itemView.userFromText.text = text
 
         val uri = user.flagUrl
         val image = viewHolder.itemView.userFromImage
         Picasso.get().load(uri).into(image)
+
+        val locale = Locale.getDefault()
+        val date = SimpleDateFormat("hh:mm aa", locale).format(Date(timestamp))
+        viewHolder.itemView.userFromTimeStamp.text = date
     }
 
     override fun getLayout(): Int {
@@ -423,9 +502,13 @@ class ChatFromItem(val text: String, private val user: User): Item<ViewHolder>()
     }
 }
 
-class ChatToItem(val text: String): Item<ViewHolder>() {
+class ChatToItem(val text: String, private val timestamp: Long): Item<ViewHolder>() {
     override fun bind(viewHolder: ViewHolder, position: Int) {
         viewHolder.itemView.userToText.text = text
+
+        val locale = Locale.getDefault()
+        val date = SimpleDateFormat("hh:mm aa", locale).format(Date(timestamp))
+        viewHolder.itemView.userToTimeStamp.text = date
     }
 
     override fun getLayout(): Int {
@@ -433,10 +516,14 @@ class ChatToItem(val text: String): Item<ViewHolder>() {
     }
 }
 
-class ChatToImageItem(val imageUri: String): Item<ViewHolder>() {
+class ChatToImageItem(private val imageUri: String, val timestamp: Long): Item<ViewHolder>() {
     override fun bind(viewHolder: ViewHolder, position: Int) {
         val image = viewHolder.itemView.chatMessageImage
         Picasso.get().load(imageUri).into(image)
+
+        val locale = Locale.getDefault()
+        val date = SimpleDateFormat("hh:mm aa", locale).format(Date(timestamp))
+        viewHolder.itemView.chatMessageImageTimeStamp.text = date
     }
 
     override fun getLayout(): Int {
@@ -444,7 +531,7 @@ class ChatToImageItem(val imageUri: String): Item<ViewHolder>() {
     }
 }
 
-class ChatFromImageItem(val imageUri: String, private val user: User): Item<ViewHolder>() {
+class ChatFromImageItem(private val imageUri: String, private val user: User, val timestamp: Long): Item<ViewHolder>() {
     override fun bind(viewHolder: ViewHolder, position: Int) {
         val uri = user.flagUrl
         val image = viewHolder.itemView.userImageMessageFrom
@@ -452,6 +539,10 @@ class ChatFromImageItem(val imageUri: String, private val user: User): Item<View
 
         val imageMessage = viewHolder.itemView.imageMessageFrom
         Picasso.get().load(imageUri).into(imageMessage)
+
+        val locale = Locale.getDefault()
+        val date = SimpleDateFormat("hh:mm aa", locale).format(Date(timestamp))
+        viewHolder.itemView.imageMessageFromTimeStamp.text = date
     }
 
     override fun getLayout(): Int {

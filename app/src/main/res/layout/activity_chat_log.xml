@@ -15,7 +15,7 @@
         android:layout_marginBottom="8dp"
         android:ems="10"
         android:hint="Enter Message"
-        android:inputType="textPersonName"
+        android:inputType="textMultiLine"
         android:minHeight="48dp"
         android:singleLine="true"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -51,12 +51,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="3dp"
+        android:focusable="true"
         android:clickable="true"
         app:backgroundTint="#053907"
         app:fabCustomSize="48dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/newMessageText"
-        app:srcCompat="@android:drawable/ic_menu_camera"
+        app:srcCompat="@android:drawable/ic_input_add"
         app:tint="@color/white"
         tools:ignore="SpeakableTextPresentCheck" />
 
@@ -69,5 +70,37 @@
         app:layout_constraintBottom_toTopOf="@+id/image_message_button"
         app:layout_constraintStart_toStartOf="@+id/image_message_button"
         app:srcCompat="@drawable/blank_profile" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/take_picture_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:focusable="true"
+        android:clickable="true"
+        android:visibility="invisible"
+        app:backgroundTint="#053907"
+        app:fabCustomSize="48dp"
+        app:layout_constraintBottom_toTopOf="@+id/choose_image_button"
+        app:layout_constraintStart_toStartOf="@+id/choose_image_button"
+        app:srcCompat="@android:drawable/ic_menu_camera"
+        app:tint="@color/white"
+        tools:ignore="SpeakableTextPresentCheck" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/choose_image_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:focusable="true"
+        android:clickable="true"
+        android:visibility="invisible"
+        app:backgroundTint="#053907"
+        app:fabCustomSize="48dp"
+        app:layout_constraintBottom_toTopOf="@+id/image_message_button"
+        app:layout_constraintStart_toStartOf="@+id/image_message_button"
+        app:srcCompat="@android:drawable/ic_menu_gallery"
+        app:tint="@color/white"
+        tools:ignore="SpeakableTextPresentCheck" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
