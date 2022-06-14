@@ -15,6 +15,8 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
 import android.widget.Toast
 import androidx.appcompat.app.ActionBar
 import androidx.core.view.isVisible
@@ -38,6 +40,7 @@ import kotlinx.android.synthetic.main.chat_from_image.view.*
 import kotlinx.android.synthetic.main.chat_from_image_group.view.*
 import kotlinx.android.synthetic.main.chat_to.view.*
 import kotlinx.android.synthetic.main.chat_toolbar.*
+import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
@@ -51,7 +54,14 @@ class GroupChatLogActivity : AppCompatActivity() {
     private var groupID: String = ""
     private var fileUri: Uri? = null
     private val MY_CAMERA_REQUEST_CODE = 7171
+    private val IMAGE_REQUEST_CODE = 100
     private var thumbnail: Bitmap? = null
+    private var clicked: Boolean = false
+
+    private val rotateOpen: Animation by lazy { AnimationUtils.loadAnimation(this, R.anim.rotate_open) }
+    private val rotateClose: Animation by lazy { AnimationUtils.loadAnimation(this, R.anim.rotate_close) }
+    private val fromBottom: Animation by lazy { AnimationUtils.loadAnimation(this, R.anim.from_bottom) }
+    private val toBottom: Animation by lazy { AnimationUtils.loadAnimation(this, R.anim.to_bottom) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -89,6 +99,10 @@ class GroupChatLogActivity : AppCompatActivity() {
         }
 
         group_image_message_button.setOnClickListener {
+            onImageButtonPressed()
+        }
+
+        group_take_picture.setOnClickListener {
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 if(checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_DENIED) {
                     val permissions = arrayOf(Manifest.permission.CAMERA)
@@ -100,6 +114,21 @@ class GroupChatLogActivity : AppCompatActivity() {
             }
             else {
                 takePicture()
+            }
+        }
+
+        group_choose_image.setOnClickListener {
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if(checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
+                    val permissions = arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
+                    requestPermissions(permissions, SettingsView.PERMISSION_CODE)
+                }
+                else {
+                    pickFromGallery()
+                }
+            }
+            else {
+                pickFromGallery()
             }
         }
 
@@ -124,6 +153,7 @@ class GroupChatLogActivity : AppCompatActivity() {
             SettingsView.PERMISSION_CODE -> {
                 if(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     takePicture()
+                    pickFromGallery()
                 }
                 else {
                     Toast.makeText(applicationContext, "Permission Denied", Toast.LENGTH_SHORT).show()
@@ -140,6 +170,49 @@ class GroupChatLogActivity : AppCompatActivity() {
                 .getBitmap(contentResolver, fileUri)
             group_image_message_preview.setImageBitmap(thumbnail)
             group_image_message_preview.visibility = View.VISIBLE
+        }
+        else if(resultCode == Activity.RESULT_OK && requestCode == IMAGE_REQUEST_CODE) {
+            if (data != null) {
+                fileUri = data.data
+            }
+            image_preview.setImageURI(fileUri)
+            image_preview.visibility = View.VISIBLE
+        }
+    }
+
+    private fun pickFromGallery() {
+        val intent = Intent(Intent.ACTION_PICK)
+        intent.type = "image/*"
+        startActivityForResult(intent, IMAGE_REQUEST_CODE)
+    }
+
+    private fun onImageButtonPressed() {
+        setVisibility()
+        setAnimation()
+        clicked = !clicked
+    }
+
+    private fun setAnimation() {
+        if(!clicked) {
+            take_picture_button.startAnimation(fromBottom)
+            choose_image_button.startAnimation(fromBottom)
+            image_message_button.startAnimation(rotateOpen)
+        }
+        else {
+            take_picture_button.startAnimation(toBottom)
+            choose_image_button.startAnimation(toBottom)
+            image_message_button.startAnimation(rotateClose)
+        }
+    }
+
+    private fun setVisibility() {
+        if(!clicked) {
+            take_picture_button.visibility = View.VISIBLE
+            choose_image_button.visibility = View.VISIBLE
+        }
+        else {
+            take_picture_button.visibility = View.INVISIBLE
+            choose_image_button.visibility = View.INVISIBLE
         }
     }
 
@@ -164,7 +237,7 @@ class GroupChatLogActivity : AppCompatActivity() {
         val reference = FirebaseDatabase.getInstance().getReference("groups/$groupID/messages/$fromID").push()
 
         if(text.isNotEmpty() && group_image_message_preview.isVisible) {
-            val groupChatMessage = GroupChatMessage(reference.key!!, text, fromID, groupID, "", "text", "", System.currentTimeMillis() / 1000)
+            val groupChatMessage = GroupChatMessage(reference.key!!, text, fromID, groupID, "", "text", "", System.currentTimeMillis())
             reference.setValue(groupChatMessage).addOnSuccessListener {
                 group_chat_text.text.clear()
                 group_chat_recyclerview.scrollToPosition(adapter.itemCount - 1)
@@ -194,8 +267,7 @@ class GroupChatLogActivity : AppCompatActivity() {
 
                     ref.downloadUrl.addOnSuccessListener {
                         Log.d("RegisterActivity","File Location: $it")
-                        val groupChatMessage = GroupChatMessage(reference.key!!, "", fromID, groupID, "", "image", it.toString(), System.currentTimeMillis() / 1000
-                        )
+                        val groupChatMessage = GroupChatMessage(reference.key!!, "", fromID, groupID, "", "image", it.toString(), System.currentTimeMillis())
                         reference.setValue(groupChatMessage).addOnSuccessListener {
                             image_preview.visibility = View.GONE
                             recyclerview_chat.scrollToPosition(adapter.itemCount - 1)
@@ -210,7 +282,7 @@ class GroupChatLogActivity : AppCompatActivity() {
                 }
         }
         else if(text.isNotEmpty()) {
-            val groupChatMessage = GroupChatMessage(reference.key!!, text, fromID, groupID, "", "text", "", System.currentTimeMillis() / 1000)
+            val groupChatMessage = GroupChatMessage(reference.key!!, text, fromID, groupID, "", "text", "", System.currentTimeMillis())
             reference.setValue(groupChatMessage).addOnSuccessListener {
                 group_chat_text.text.clear()
                 group_chat_recyclerview.scrollToPosition(adapter.itemCount - 1)
@@ -241,8 +313,7 @@ class GroupChatLogActivity : AppCompatActivity() {
 
                     ref.downloadUrl.addOnSuccessListener {
                         Log.d("RegisterActivity","File Location: $it")
-                        val groupChatMessage = GroupChatMessage(reference.key!!, "", fromID, groupID, "", "image", it.toString(), System.currentTimeMillis() / 1000
-                        )
+                        val groupChatMessage = GroupChatMessage(reference.key!!, "", fromID, groupID, "", "image", it.toString(), System.currentTimeMillis())
                         reference.setValue(groupChatMessage).addOnSuccessListener {
                             image_preview.visibility = View.GONE
                             recyclerview_chat.scrollToPosition(adapter.itemCount - 1)
@@ -338,9 +409,31 @@ class GroupChatLogActivity : AppCompatActivity() {
                             }
                         } else {
                             if (checkTranslate) {
-                                //adapter.add(ChatFromItem(translatedMessage, toUser!!))
+                                if(chatMessage.type == "text") {
+                                    val toUser: GroupMember? = toUsers[chatMessage.fromID]
+                                    toUser?.let { ChatFromGroupItem(chatMessage.translatedText, it, chatMessage.timestamp) }?.let {
+                                        adapter.add(it)
+                                    }
+                                }
+                                else {
+                                    val toUser: GroupMember? = toUsers[chatMessage.fromID]
+                                    toUser?.let { ChatFromGroupImageItem(chatMessage.imageUri, toUser, chatMessage.timestamp) }?.let {
+                                        adapter.add(it)
+                                    }
+                                }
                             } else {
-                                //adapter.add(ChatFromItem(chatMessage.text, toUser!!))
+                                if(chatMessage.type == "text") {
+                                    val toUser: GroupMember? = toUsers[chatMessage.fromID]
+                                    toUser?.let { ChatFromGroupItem(chatMessage.text, it, chatMessage.timestamp) }?.let {
+                                        adapter.add(it)
+                                    }
+                                }
+                                else {
+                                    val toUser: GroupMember? = toUsers[chatMessage.fromID]
+                                    toUser?.let { ChatFromGroupImageItem(chatMessage.imageUri, toUser, chatMessage.timestamp) }?.let {
+                                        adapter.add(it)
+                                    }
+                                }
                             }
                         }
                     }
@@ -379,13 +472,13 @@ class GroupChatLogActivity : AppCompatActivity() {
                         else {
                             if(chatMessage.type == "text") {
                                 val toUser: GroupMember? = toUsers[chatMessage.fromID]
-                                toUser?.let { ChatFromGroupItem(chatMessage.text, it) }?.let {
+                                toUser?.let { ChatFromGroupItem(chatMessage.text, it, chatMessage.timestamp) }?.let {
                                     adapter.add(it)
                                 }
                             }
                             else {
                                 val toUser: GroupMember? = toUsers[chatMessage.fromID]
-                                toUser?.let { ChatFromGroupImageItem(chatMessage.text, toUser) }?.let {
+                                toUser?.let { ChatFromGroupImageItem(chatMessage.text, toUser, chatMessage.timestamp) }?.let {
                                     adapter.add(it)
                                 }
                             }
@@ -396,7 +489,16 @@ class GroupChatLogActivity : AppCompatActivity() {
             }
 
             override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
-                // Nada
+                val changedChatMessage = snapshot.getValue(GroupChatMessage::class.java)
+
+                if(changedChatMessage != null) {
+                    if (checkTranslatedMessage) {
+                        val toUser: GroupMember? = toUsers[changedChatMessage.fromID]
+                        toUser?.let { ChatFromGroupItem(changedChatMessage.translatedText, it, changedChatMessage.timestamp) }?.let {
+                            adapter.add(it)
+                        }
+                    }
+                }
             }
 
             override fun onChildRemoved(snapshot: DataSnapshot) {
@@ -415,7 +517,7 @@ class GroupChatLogActivity : AppCompatActivity() {
     }
 }
 
-class ChatFromGroupItem(val text: String, private val member: GroupMember): Item<ViewHolder>() {
+class ChatFromGroupItem(val text: String, private val member: GroupMember, private val timestamp: Long): Item<ViewHolder>() {
     override fun bind(viewHolder: ViewHolder, position: Int) {
         viewHolder.itemView.userFromGroupText.text = text
         viewHolder.itemView.userFromGroupName.text = member.displayName
@@ -423,6 +525,10 @@ class ChatFromGroupItem(val text: String, private val member: GroupMember): Item
         val uri = member.flagUrl
         val image = viewHolder.itemView.userFromImageGroup
         Picasso.get().load(uri).into(image)
+
+        val locale = Locale.getDefault()
+        val date = SimpleDateFormat("hh:mm aa", locale).format(Date(timestamp))
+        viewHolder.itemView.userFromTimeSent.text = date
     }
 
     override fun getLayout(): Int {
@@ -430,7 +536,7 @@ class ChatFromGroupItem(val text: String, private val member: GroupMember): Item
     }
 }
 
-class ChatFromGroupImageItem(val imageUri: String, private val member: GroupMember): Item<ViewHolder>() {
+class ChatFromGroupImageItem(private val imageUri: String, private val member: GroupMember, private val timestamp: Long): Item<ViewHolder>() {
     override fun bind(viewHolder: ViewHolder, position: Int) {
         val uri = member.flagUrl
         val image = viewHolder.itemView.userImageGroupMessageFrom
@@ -438,6 +544,10 @@ class ChatFromGroupImageItem(val imageUri: String, private val member: GroupMemb
 
         val imageMessage = viewHolder.itemView.groupImageMessageFrom
         Picasso.get().load(imageUri).into(imageMessage)
+
+        val locale = Locale.getDefault()
+        val date = SimpleDateFormat("hh:mm aa", locale).format(Date(timestamp))
+        viewHolder.itemView.imageMessageGroupFromTime.text = date
     }
 
     override fun getLayout(): Int {

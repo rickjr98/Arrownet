@@ -531,7 +531,7 @@ class ChatToImageItem(private val imageUri: String, val timestamp: Long): Item<V
     }
 }
 
-class ChatFromImageItem(private val imageUri: String, private val user: User, val timestamp: Long): Item<ViewHolder>() {
+class ChatFromImageItem(private val imageUri: String, private val user: User, private val timestamp: Long): Item<ViewHolder>() {
     override fun bind(viewHolder: ViewHolder, position: Int) {
         val uri = user.flagUrl
         val image = viewHolder.itemView.userImageMessageFrom

@@ -70,4 +70,33 @@
         app:layout_constraintStart_toStartOf="@+id/group_image_message_button"
         app:srcCompat="@drawable/ic_launcher_background" />
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/group_take_picture"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:focusable="true"
+        android:clickable="true"
+        android:visibility="invisible"
+        app:backgroundTint="#053907"
+        app:layout_constraintBottom_toTopOf="@+id/group_image_message_button"
+        app:layout_constraintEnd_toEndOf="@+id/group_image_message_button"
+        app:layout_constraintStart_toStartOf="@+id/group_image_message_button"
+        app:srcCompat="@android:drawable/ic_menu_camera"
+        tools:ignore="SpeakableTextPresentCheck" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/group_choose_image"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:focusable="true"
+        android:clickable="true"
+        android:visibility="invisible"
+        app:backgroundTint="#053907"
+        app:layout_constraintBottom_toTopOf="@+id/floatingActionButton"
+        app:layout_constraintStart_toStartOf="@+id/floatingActionButton"
+        app:srcCompat="@android:drawable/ic_menu_gallery"
+        tools:ignore="SpeakableTextPresentCheck" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
