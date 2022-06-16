@@ -121,7 +121,12 @@ class HomePage : AppCompatActivity() {
         val toUsers = HashMap<String, GroupMember>()
         val uidList: ArrayList<String> = arrayListOf()
         override fun bind(viewHolder: ViewHolder, position: Int) {
-            viewHolder.itemView.latest_message_text.text = groupMessage.text
+            if(groupMessage.type == "text") {
+                viewHolder.itemView.latest_message_text.text = groupMessage.text
+            }
+            else {
+                viewHolder.itemView.latest_message_text.text = "IMAGE"
+            }
 
             val groupID: String = groupMessage.groupID
 

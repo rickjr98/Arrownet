@@ -20,6 +20,7 @@ import android.view.animation.AnimationUtils
 import android.widget.Toast
 import androidx.appcompat.app.ActionBar
 import androidx.core.view.isVisible
+import com.arrowhead.arrownet.SettingsView.Companion.PERMISSION_CODE
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.google.firebase.storage.FirebaseStorage
@@ -71,18 +72,24 @@ class GroupChatLogActivity : AppCompatActivity() {
         val image = intent.getStringExtra("ImageKey")
         groupID = intent.getStringExtra("GroupID").toString()
         contactsList = HomePage.contactsList
-        uidList = intent.getSerializableExtra("UidList") as ArrayList<String>
+        uidList = (intent.getSerializableExtra("UidList") as ArrayList<String>)
         toUsers = intent.getSerializableExtra("toUsers") as HashMap<String, GroupMember>
 
         group_chat_recyclerview.adapter = adapter
 
         supportActionBar?.displayOptions = ActionBar.DISPLAY_SHOW_CUSTOM
         supportActionBar?.setCustomView(R.layout.chat_toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
         title_name.text = name
         Picasso.get().load(image).into(profile_image)
+        Picasso.get().load(HomePage.currentUser?.flagUrl).into(translate_image)
 
         listenForMessages()
+
+        back_button.setOnClickListener {
+            val intent = Intent(this, HomePage::class.java)
+            startActivity(intent)
+            finish()
+        }
 
         translate_switch.setOnCheckedChangeListener { _, p1 ->
             checkTranslatedMessage = p1
@@ -106,7 +113,7 @@ class GroupChatLogActivity : AppCompatActivity() {
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 if(checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_DENIED) {
                     val permissions = arrayOf(Manifest.permission.CAMERA)
-                    requestPermissions(permissions, SettingsView.PERMISSION_CODE)
+                    requestPermissions(permissions, PERMISSION_CODE)
                 }
                 else {
                     takePicture()
@@ -121,7 +128,7 @@ class GroupChatLogActivity : AppCompatActivity() {
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 if(checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
                     val permissions = arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
-                    requestPermissions(permissions, SettingsView.PERMISSION_CODE)
+                    requestPermissions(permissions, PERMISSION_CODE)
                 }
                 else {
                     pickFromGallery()
@@ -144,13 +151,19 @@ class GroupChatLogActivity : AppCompatActivity() {
         }
     }
 
+    override fun onBackPressed() {
+        val intent = Intent(this, HomePage::class.java)
+        startActivity(intent)
+        finish()
+    }
+
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
         grantResults: IntArray
     ) {
         when(requestCode) {
-            SettingsView.PERMISSION_CODE -> {
+            PERMISSION_CODE -> {
                 if(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     takePicture()
                     pickFromGallery()
@@ -175,8 +188,8 @@ class GroupChatLogActivity : AppCompatActivity() {
             if (data != null) {
                 fileUri = data.data
             }
-            image_preview.setImageURI(fileUri)
-            image_preview.visibility = View.VISIBLE
+            group_image_message_preview.setImageURI(fileUri)
+            group_image_message_preview.visibility = View.VISIBLE
         }
     }
 
@@ -194,25 +207,29 @@ class GroupChatLogActivity : AppCompatActivity() {
 
     private fun setAnimation() {
         if(!clicked) {
-            take_picture_button.startAnimation(fromBottom)
-            choose_image_button.startAnimation(fromBottom)
-            image_message_button.startAnimation(rotateOpen)
+            group_take_picture.startAnimation(fromBottom)
+            group_choose_image.startAnimation(fromBottom)
+            group_image_message_button.startAnimation(rotateOpen)
         }
         else {
-            take_picture_button.startAnimation(toBottom)
-            choose_image_button.startAnimation(toBottom)
-            image_message_button.startAnimation(rotateClose)
+            group_take_picture.startAnimation(toBottom)
+            group_choose_image.startAnimation(toBottom)
+            group_image_message_button.startAnimation(rotateClose)
         }
     }
 
     private fun setVisibility() {
         if(!clicked) {
-            take_picture_button.visibility = View.VISIBLE
-            choose_image_button.visibility = View.VISIBLE
+            group_take_picture.visibility = View.VISIBLE
+            group_take_picture.isClickable = true
+            group_choose_image.visibility = View.VISIBLE
+            group_choose_image.isClickable = true
         }
         else {
-            take_picture_button.visibility = View.INVISIBLE
-            choose_image_button.visibility = View.INVISIBLE
+            group_take_picture.visibility = View.GONE
+            group_take_picture.isClickable = false
+            group_choose_image.visibility = View.GONE
+            group_choose_image.isClickable = false
         }
     }
 
@@ -247,9 +264,6 @@ class GroupChatLogActivity : AppCompatActivity() {
                 memberReference.setValue(groupChatMessage)
             }
 
-            val latestGroupReference = FirebaseDatabase.getInstance().getReference("latest-group-messages/$fromID/$groupID")
-            latestGroupReference.setValue(groupChatMessage)
-
             for(User in uidList) {
                 val latestGroupReferenceTo = FirebaseDatabase.getInstance().getReference("latest-group-messages/$User/$groupID")
                 latestGroupReferenceTo.setValue(groupChatMessage)
@@ -272,7 +286,12 @@ class GroupChatLogActivity : AppCompatActivity() {
                             image_preview.visibility = View.GONE
                             recyclerview_chat.scrollToPosition(adapter.itemCount - 1)
                         }
-                        latestGroupReference.setValue(groupChatMessage)
+                        for(User in uidList) {
+                            if(User != HomePage.currentUser!!.uid) {
+                                val memberReference = FirebaseDatabase.getInstance().getReference("groups/$groupID/messages/$User").push()
+                                memberReference.setValue(groupChatMessage)
+                            }
+                        }
 
                         for(User in uidList) {
                             val latestGroupReferenceTo = FirebaseDatabase.getInstance().getReference("latest-group-messages/$User/$groupID")
@@ -288,12 +307,11 @@ class GroupChatLogActivity : AppCompatActivity() {
                 group_chat_recyclerview.scrollToPosition(adapter.itemCount - 1)
             }
             for(User in uidList) {
-                val memberReference = FirebaseDatabase.getInstance().getReference("groups/$groupID/messages/$User").push()
-                memberReference.setValue(groupChatMessage)
+                if(User != HomePage.currentUser!!.uid) {
+                    val memberReference = FirebaseDatabase.getInstance().getReference("groups/$groupID/messages/$User").push()
+                    memberReference.setValue(groupChatMessage)
+                }
             }
-
-            val latestGroupReference = FirebaseDatabase.getInstance().getReference("latest-group-messages/$fromID/$groupID")
-            latestGroupReference.setValue(groupChatMessage)
 
             for(User in uidList) {
                 val latestGroupReferenceTo = FirebaseDatabase.getInstance().getReference("latest-group-messages/$User/$groupID")
@@ -315,11 +333,15 @@ class GroupChatLogActivity : AppCompatActivity() {
                         Log.d("RegisterActivity","File Location: $it")
                         val groupChatMessage = GroupChatMessage(reference.key!!, "", fromID, groupID, "", "image", it.toString(), System.currentTimeMillis())
                         reference.setValue(groupChatMessage).addOnSuccessListener {
-                            image_preview.visibility = View.GONE
-                            recyclerview_chat.scrollToPosition(adapter.itemCount - 1)
+                            group_image_message_preview.visibility = View.GONE
+                            group_chat_recyclerview.scrollToPosition(adapter.itemCount - 1)
                         }
-                        val latestGroupReference = FirebaseDatabase.getInstance().getReference("latest-group-messages/$fromID/$groupID")
-                        latestGroupReference.setValue(groupChatMessage)
+                        for(User in uidList) {
+                            if(User != HomePage.currentUser!!.uid) {
+                                val memberReference = FirebaseDatabase.getInstance().getReference("groups/$groupID/messages/$User").push()
+                                memberReference.setValue(groupChatMessage)
+                            }
+                        }
 
                         for(User in uidList) {
                             val latestGroupReferenceTo = FirebaseDatabase.getInstance().getReference("latest-group-messages/$User/$groupID")
@@ -438,7 +460,7 @@ class GroupChatLogActivity : AppCompatActivity() {
                         }
                     }
                 }
-                recyclerview_chat.scrollToPosition(adapter.itemCount - 1)
+                group_chat_recyclerview.scrollToPosition(adapter.itemCount - 1)
             }
 
             override fun onCancelled(error: DatabaseError) {

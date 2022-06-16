@@ -78,12 +78,17 @@ class ChatLogActivity : AppCompatActivity() {
 
         supportActionBar?.displayOptions = ActionBar.DISPLAY_SHOW_CUSTOM
         supportActionBar?.setCustomView(R.layout.chat_toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
         title_name.text = name
         Picasso.get().load(toUser?.photoUrl).into(profile_image)
         Picasso.get().load(HomePage.currentUser?.flagUrl).into(translate_image)
 
         listenForMessages()
+
+        back_button.setOnClickListener {
+            val intent = Intent(this, HomePage::class.java)
+            startActivity(intent)
+            finish()
+        }
 
         translate_switch.setOnCheckedChangeListener { _, p1 ->
             checkTranslatedMessage = p1
@@ -132,6 +137,12 @@ class ChatLogActivity : AppCompatActivity() {
                 pickFromGallery()
             }
         }
+    }
+
+    override fun onBackPressed() {
+        val intent = Intent(this, HomePage::class.java)
+        startActivity(intent)
+        finish()
     }
 
     private fun pickFromGallery() {

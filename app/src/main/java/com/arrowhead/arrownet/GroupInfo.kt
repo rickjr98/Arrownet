@@ -1,10 +1,13 @@
 package com.arrowhead.arrownet
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import androidx.appcompat.app.ActionBar
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_group_info.*
+import kotlinx.android.synthetic.main.group_info_toolbar.*
 
 class GroupInfo : AppCompatActivity() {
     private var contactsList = HashMap<String, String>()
@@ -25,15 +28,20 @@ class GroupInfo : AppCompatActivity() {
 
         Picasso.get().load(image).into(group_info_photo)
         group_info_name.text = name
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.displayOptions = ActionBar.DISPLAY_SHOW_CUSTOM
+        supportActionBar?.setCustomView(R.layout.group_info_toolbar)
+        group_name_info.text = "Group Information"
 
-        intent.putExtra("ContactsList", contactsList)
-        intent.putExtra("toUsers", toUsers)
-        intent.putExtra("GroupName", name)
-        intent.putExtra("ImageKey", image)
-        intent.putExtra("UidList", uidList)
-        intent.putExtra("GroupID", groupID)
-
-        Log.d("UID", uidList.toString())
+        group_info_back_button.setOnClickListener {
+            val intent = Intent(this, GroupChatLogActivity::class.java)
+            intent.putExtra("ContactsList", contactsList)
+            intent.putExtra("toUsers", toUsers)
+            intent.putExtra("GroupName", name)
+            intent.putExtra("ImageKey", image)
+            intent.putExtra("UidList", uidList)
+            intent.putExtra("GroupID", groupID)
+            startActivity(intent)
+            finish()
+        }
     }
 }

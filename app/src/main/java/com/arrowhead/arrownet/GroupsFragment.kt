@@ -35,6 +35,7 @@ class GroupsFragment : Fragment() {
             intent.putExtra("UidList", row.uidList)
             intent.putExtra("toUsers", row.toUsers)
             startActivity(intent)
+            activity?.finish()
         }
     }
 

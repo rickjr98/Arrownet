@@ -40,6 +40,7 @@ class ChatsFragment : Fragment() {
             intent.putExtra(NewMessageActivity.USER_KEY, row.chatPartnerUser)
             intent.putExtra(NewMessageActivity.NAME_KEY, row.name)
             startActivity(intent)
+            activity?.finish()
         }
     }
 

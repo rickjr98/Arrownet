@@ -56,7 +56,7 @@
         app:fabCustomSize="48dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/group_chat_text"
-        app:srcCompat="@android:drawable/ic_menu_camera"
+        app:srcCompat="@android:drawable/ic_input_add"
         app:tint="@color/white"
         tools:ignore="SpeakableTextPresentCheck" />
 
@@ -77,12 +77,13 @@
         android:layout_marginBottom="8dp"
         android:focusable="true"
         android:clickable="true"
-        android:visibility="invisible"
+        android:visibility="gone"
         app:backgroundTint="#053907"
         app:layout_constraintBottom_toTopOf="@+id/group_image_message_button"
         app:layout_constraintEnd_toEndOf="@+id/group_image_message_button"
         app:layout_constraintStart_toStartOf="@+id/group_image_message_button"
         app:srcCompat="@android:drawable/ic_menu_camera"
+        app:tint="@color/white"
         tools:ignore="SpeakableTextPresentCheck" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -90,13 +91,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:focusable="true"
         android:clickable="true"
-        android:visibility="invisible"
+        android:focusable="true"
+        android:visibility="gone"
         app:backgroundTint="#053907"
-        app:layout_constraintBottom_toTopOf="@+id/floatingActionButton"
-        app:layout_constraintStart_toStartOf="@+id/floatingActionButton"
+        app:layout_constraintBottom_toTopOf="@+id/group_take_picture"
+        app:layout_constraintStart_toStartOf="@+id/group_take_picture"
         app:srcCompat="@android:drawable/ic_menu_gallery"
+        app:tint="@color/white"
         tools:ignore="SpeakableTextPresentCheck" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
