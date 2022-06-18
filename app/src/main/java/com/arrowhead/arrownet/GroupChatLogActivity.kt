@@ -264,6 +264,9 @@ class GroupChatLogActivity : AppCompatActivity() {
                 memberReference.setValue(groupChatMessage)
             }
 
+            val latestToReference = FirebaseDatabase.getInstance().getReference("latest-group-messages/$fromID/$groupID")
+            latestToReference.setValue(groupChatMessage)
+
             for(User in uidList) {
                 val latestGroupReferenceTo = FirebaseDatabase.getInstance().getReference("latest-group-messages/$User/$groupID")
                 latestGroupReferenceTo.setValue(groupChatMessage)
@@ -313,6 +316,9 @@ class GroupChatLogActivity : AppCompatActivity() {
                 }
             }
 
+            val latestToReference = FirebaseDatabase.getInstance().getReference("latest-group-messages/$fromID/$groupID")
+            latestToReference.setValue(groupChatMessage)
+
             for(User in uidList) {
                 val latestGroupReferenceTo = FirebaseDatabase.getInstance().getReference("latest-group-messages/$User/$groupID")
                 latestGroupReferenceTo.setValue(groupChatMessage)
@@ -342,6 +348,9 @@ class GroupChatLogActivity : AppCompatActivity() {
                                 memberReference.setValue(groupChatMessage)
                             }
                         }
+
+                        val latestToReference = FirebaseDatabase.getInstance().getReference("latest-group-messages/$fromID/$groupID")
+                        latestToReference.setValue(groupChatMessage)
 
                         for(User in uidList) {
                             val latestGroupReferenceTo = FirebaseDatabase.getInstance().getReference("latest-group-messages/$User/$groupID")

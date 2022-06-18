@@ -72,12 +72,12 @@ class NewGroupActivity : AppCompatActivity() {
 
         mDatabase.child("group-details").setValue(group)
 
-        val admin = HomePage.currentUser?.let { GroupMember(uid, "admin", it.userName, HomePage.currentUser!!.flagUrl, HomePage.currentUser!!.phoneNumber) }
+        val admin = HomePage.currentUser?.let { GroupMember(uid, "admin", it.userName, HomePage.currentUser!!.flagUrl, HomePage.currentUser!!.phoneNumber, HomePage.currentUser!!.photoUrl) }
 
         mDatabase.child("members").child(uid).setValue(admin)
 
         for(User in userList) {
-            val newMember = GroupMember(User.uid, "member", User.userName, User.flagUrl, User.phoneNumber)
+            val newMember = GroupMember(User.uid, "member", User.userName, User.flagUrl, User.phoneNumber, User.photoUrl)
             mDatabase.child("members").child(User.uid).setValue(newMember)
             uidList.add(User.uid)
             toUsers[newMember.uid] = newMember
@@ -126,6 +126,6 @@ class Group(var GroupID: String, var GroupName: String, var GroupImageURI: Strin
 }
 
 @Parcelize
-class GroupMember(val uid: String, val role: String, val displayName: String, val flagUrl: String, val phoneNumber: String): Parcelable {
-    constructor() : this("", "", "", "", "")
+class GroupMember(val uid: String, val role: String, val displayName: String, val flagUrl: String, val phoneNumber: String, val profilePicture: String): Parcelable {
+    constructor() : this("", "", "", "", "", "")
 }
