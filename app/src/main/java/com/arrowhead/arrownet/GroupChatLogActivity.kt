@@ -245,17 +245,13 @@ class GroupChatLogActivity : AppCompatActivity() {
         startActivityForResult(intent, MY_CAMERA_REQUEST_CODE)
     }
 
-    class GroupChatMessage(val id: String, val text: String, val fromID: String?, val groupID: String, var translatedText: String, val type: String, val imageUri: String, val timestamp: Long) {
-        constructor() : this("", "", "", "", "", "", "", -1)
-    }
-
     private fun sendMessage() {
         val text = group_chat_text.text.toString()
         val fromID = FirebaseAuth.getInstance().uid
         val reference = FirebaseDatabase.getInstance().getReference("groups/$groupID/messages/$fromID").push()
 
         if(text.isNotEmpty() && group_image_message_preview.isVisible) {
-            val groupChatMessage = GroupChatMessage(reference.key!!, text, fromID, groupID, "", "text", "", System.currentTimeMillis())
+            val groupChatMessage = ChatLogActivity.ChatMessage(reference.key!!, text, fromID!!, groupID, "", "text", "", System.currentTimeMillis(), "group")
             reference.setValue(groupChatMessage).addOnSuccessListener {
                 group_chat_text.text.clear()
                 group_chat_recyclerview.scrollToPosition(adapter.itemCount - 1)
@@ -265,11 +261,11 @@ class GroupChatLogActivity : AppCompatActivity() {
                 memberReference.setValue(groupChatMessage)
             }
 
-            val latestToReference = FirebaseDatabase.getInstance().getReference("latest-group-messages/$fromID/$groupID")
+            val latestToReference = FirebaseDatabase.getInstance().getReference("latest-messages/$fromID/$groupID")
             latestToReference.setValue(groupChatMessage)
 
             for(User in uidList) {
-                val latestGroupReferenceTo = FirebaseDatabase.getInstance().getReference("latest-group-messages/$User/$groupID")
+                val latestGroupReferenceTo = FirebaseDatabase.getInstance().getReference("latest-messages/$User/$groupID")
                 latestGroupReferenceTo.setValue(groupChatMessage)
             }
 
@@ -285,7 +281,7 @@ class GroupChatLogActivity : AppCompatActivity() {
 
                     ref.downloadUrl.addOnSuccessListener {
                         Log.d("RegisterActivity","File Location: $it")
-                        val groupChatMessage = GroupChatMessage(reference.key!!, "", fromID, groupID, "", "image", it.toString(), System.currentTimeMillis())
+                        val groupChatMessage = ChatLogActivity.ChatMessage(reference.key!!, "", fromID, groupID, "", "image", it.toString(), System.currentTimeMillis(), "group")
                         reference.setValue(groupChatMessage).addOnSuccessListener {
                             image_preview.visibility = View.GONE
                             recyclerview_chat.scrollToPosition(adapter.itemCount - 1)
@@ -298,14 +294,14 @@ class GroupChatLogActivity : AppCompatActivity() {
                         }
 
                         for(User in uidList) {
-                            val latestGroupReferenceTo = FirebaseDatabase.getInstance().getReference("latest-group-messages/$User/$groupID")
+                            val latestGroupReferenceTo = FirebaseDatabase.getInstance().getReference("latest-messages/$User/$groupID")
                             latestGroupReferenceTo.setValue(groupChatMessage)
                         }
                     }
                 }
         }
         else if(text.isNotEmpty()) {
-            val groupChatMessage = GroupChatMessage(reference.key!!, text, fromID, groupID, "", "text", "", System.currentTimeMillis())
+            val groupChatMessage = ChatLogActivity.ChatMessage(reference.key!!, text, fromID!!, groupID, "", "text", "", System.currentTimeMillis(), "group")
             reference.setValue(groupChatMessage).addOnSuccessListener {
                 group_chat_text.text.clear()
                 group_chat_recyclerview.scrollToPosition(adapter.itemCount - 1)
@@ -317,11 +313,11 @@ class GroupChatLogActivity : AppCompatActivity() {
                 }
             }
 
-            val latestToReference = FirebaseDatabase.getInstance().getReference("latest-group-messages/$fromID/$groupID")
+            val latestToReference = FirebaseDatabase.getInstance().getReference("latest-messages/$fromID/$groupID")
             latestToReference.setValue(groupChatMessage)
 
             for(User in uidList) {
-                val latestGroupReferenceTo = FirebaseDatabase.getInstance().getReference("latest-group-messages/$User/$groupID")
+                val latestGroupReferenceTo = FirebaseDatabase.getInstance().getReference("latest-messages/$User/$groupID")
                 latestGroupReferenceTo.setValue(groupChatMessage)
             }
         }
@@ -338,7 +334,7 @@ class GroupChatLogActivity : AppCompatActivity() {
 
                     ref.downloadUrl.addOnSuccessListener {
                         Log.d("RegisterActivity","File Location: $it")
-                        val groupChatMessage = GroupChatMessage(reference.key!!, "", fromID, groupID, "", "image", it.toString(), System.currentTimeMillis())
+                        val groupChatMessage = ChatLogActivity.ChatMessage(reference.key!!, "", fromID!!, groupID, "", "image", it.toString(), System.currentTimeMillis(), "group")
                         reference.setValue(groupChatMessage).addOnSuccessListener {
                             group_image_message_preview.visibility = View.GONE
                             group_chat_recyclerview.scrollToPosition(adapter.itemCount - 1)
@@ -350,11 +346,11 @@ class GroupChatLogActivity : AppCompatActivity() {
                             }
                         }
 
-                        val latestToReference = FirebaseDatabase.getInstance().getReference("latest-group-messages/$fromID/$groupID")
+                        val latestToReference = FirebaseDatabase.getInstance().getReference("latest-messages/$fromID/$groupID")
                         latestToReference.setValue(groupChatMessage)
 
                         for(User in uidList) {
-                            val latestGroupReferenceTo = FirebaseDatabase.getInstance().getReference("latest-group-messages/$User/$groupID")
+                            val latestGroupReferenceTo = FirebaseDatabase.getInstance().getReference("latest-messages/$User/$groupID")
                             latestGroupReferenceTo.setValue(groupChatMessage)
                         }
                     }
@@ -429,7 +425,7 @@ class GroupChatLogActivity : AppCompatActivity() {
             override fun onDataChange(snapshot: DataSnapshot) {
                 adapter.clear()
                 snapshot.children.forEach {
-                    val chatMessage = it.getValue(GroupChatMessage::class.java)
+                    val chatMessage = it.getValue(ChatLogActivity.ChatMessage::class.java)
 
                     if (chatMessage != null) {
                         if (chatMessage.fromID == FirebaseAuth.getInstance().uid) {
@@ -443,7 +439,7 @@ class GroupChatLogActivity : AppCompatActivity() {
                             if (checkTranslate) {
                                 if(chatMessage.type == "text") {
                                     val toUser: GroupMember? = toUsers[chatMessage.fromID]
-                                    toUser?.let { ChatFromGroupItem(chatMessage.translatedText, it, chatMessage.timestamp) }?.let {
+                                    toUser?.let { ChatFromGroupItem(chatMessage.translatedMessage, it, chatMessage.timestamp) }?.let {
                                         adapter.add(it)
                                     }
                                 }
@@ -485,7 +481,7 @@ class GroupChatLogActivity : AppCompatActivity() {
 
         reference.addChildEventListener(object: ChildEventListener {
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
-                val chatMessage = snapshot.getValue(GroupChatMessage::class.java)
+                val chatMessage = snapshot.getValue(ChatLogActivity.ChatMessage::class.java)
 
                 if (chatMessage != null) {
                     translateText()
@@ -521,12 +517,12 @@ class GroupChatLogActivity : AppCompatActivity() {
             }
 
             override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
-                val changedChatMessage = snapshot.getValue(GroupChatMessage::class.java)
+                val changedChatMessage = snapshot.getValue(ChatLogActivity.ChatMessage::class.java)
 
                 if(changedChatMessage != null) {
                     if (checkTranslatedMessage) {
                         val toUser: GroupMember? = toUsers[changedChatMessage.fromID]
-                        toUser?.let { ChatFromGroupItem(changedChatMessage.translatedText, it, changedChatMessage.timestamp) }?.let {
+                        toUser?.let { ChatFromGroupItem(changedChatMessage.translatedMessage, it, changedChatMessage.timestamp) }?.let {
                             adapter.add(it)
                         }
                     }

@@ -10,34 +10,26 @@ import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.view.ContextMenu
-import android.view.MenuItem
 import android.view.View
 import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.view.menu.MenuView
 import androidx.core.widget.addTextChangedListener
-import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
-import com.google.firebase.database.ktx.getValue
-import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
 import com.squareup.picasso.Picasso
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.activity_group_info.*
-import kotlinx.android.synthetic.main.activity_group_info.view.*
 import kotlinx.android.synthetic.main.activity_settings_view.*
 import kotlinx.android.synthetic.main.group_info_member_item.view.*
 import kotlinx.android.synthetic.main.group_info_toolbar.*
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
-import kotlin.properties.Delegates
 
 class GroupInfo : AppCompatActivity() {
     private var contactsList = HashMap<String, String>()

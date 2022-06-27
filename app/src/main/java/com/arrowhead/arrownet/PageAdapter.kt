@@ -9,7 +9,7 @@ import androidx.fragment.app.FragmentPagerAdapter
 
 class PageAdapter(fm : FragmentManager, private val contactsList: HashMap<String, String>) : FragmentPagerAdapter(fm) {
     override fun getCount(): Int {
-        return 2
+        return 1
     }
 
     override fun getItem(position: Int): Fragment {
@@ -21,12 +21,6 @@ class PageAdapter(fm : FragmentManager, private val contactsList: HashMap<String
                 bundle.putSerializable("ContactsList", contactsList)
                 chatFragment.arguments = bundle
                 chatFragment
-            }
-            1-> {
-                val groupFragment = GroupsFragment()
-                bundle.putSerializable("ContactsList", contactsList)
-                groupFragment.arguments = bundle
-                groupFragment
             }
             else-> {
                 val chatFragment = ChatsFragment()
@@ -41,9 +35,6 @@ class PageAdapter(fm : FragmentManager, private val contactsList: HashMap<String
         when(position) {
             0-> {
                 return "Chats"
-            }
-            1-> {
-                return "Groups"
             }
         }
         return super.getPageTitle(position)

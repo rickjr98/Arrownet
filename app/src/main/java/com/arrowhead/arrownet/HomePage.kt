@@ -71,6 +71,11 @@ class HomePage : AppCompatActivity() {
     class LatestMessageRow(private val chatMessage: ChatLogActivity.ChatMessage, private val contacts: HashMap<String, String>): Item<ViewHolder>() {
         var chatPartnerUser: User? = null
         lateinit var name: String
+        val chatType = chatMessage.chatType
+        private val groupID: String = chatMessage.toID
+        var group: Group? = null
+        val toUsers = HashMap<String, GroupMember>()
+        val uidList: ArrayList<String> = arrayListOf()
         override fun bind(viewHolder: ViewHolder, position: Int) {
             if(chatMessage.type == "text") {
                 viewHolder.itemView.latest_message_text.text = chatMessage.text
@@ -87,89 +92,71 @@ class HomePage : AppCompatActivity() {
                 chatPartnerID = chatMessage.fromID
             }
 
-            val ref = FirebaseDatabase.getInstance().getReference("users/$chatPartnerID")
-            ref.addListenerForSingleValueEvent(object: ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    chatPartnerUser = snapshot.getValue(User::class.java)
-                    val number = chatPartnerUser?.phoneNumber.toString()
-                    if(contacts.containsKey(number)) {
-                        viewHolder.itemView.latest_message_username.text = contacts[number].toString()
-                        name = viewHolder.itemView.latest_message_username.text.toString()
+            if(chatMessage.chatType == "chat") {
+                val ref = FirebaseDatabase.getInstance().getReference("users/$chatPartnerID")
+                ref.addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        chatPartnerUser = snapshot.getValue(User::class.java)
+                        val number = chatPartnerUser?.phoneNumber.toString()
+                        if (contacts.containsKey(number)) {
+                            viewHolder.itemView.latest_message_username.text =
+                                contacts[number].toString()
+                            name = viewHolder.itemView.latest_message_username.text.toString()
+                        } else {
+                            viewHolder.itemView.latest_message_username.text =
+                                chatPartnerUser?.userName
+                            name = viewHolder.itemView.latest_message_username.text.toString()
+                        }
+
+                        val targetImage = viewHolder.itemView.latest_message_user_picture
+                        Picasso.get().load(chatPartnerUser?.photoUrl).into(targetImage)
                     }
-                    else {
-                        viewHolder.itemView.latest_message_username.text = chatPartnerUser?.userName
-                        name = viewHolder.itemView.latest_message_username.text.toString()
+
+                    override fun onCancelled(error: DatabaseError) {
+                        // nada
                     }
 
-                    val targetImage = viewHolder.itemView.latest_message_user_picture
-                    Picasso.get().load(chatPartnerUser?.photoUrl).into(targetImage)
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                    // nada
-                }
-
-            })
-        }
-
-        override fun getLayout(): Int {
-            return R.layout.latest_message_row
-        }
-
-    }
-
-    class LatestGroupMessageRow(private val groupMessage: GroupChatLogActivity.GroupChatMessage): Item<ViewHolder>() {
-        var group: Group? = null
-        val toUsers = HashMap<String, GroupMember>()
-        val uidList: ArrayList<String> = arrayListOf()
-        override fun bind(viewHolder: ViewHolder, position: Int) {
-            if(groupMessage.type == "text") {
-                viewHolder.itemView.latest_message_text.text = groupMessage.text
+                })
             }
-            else {
-                viewHolder.itemView.latest_message_text.text = "IMAGE"
-            }
+            else if(chatMessage.chatType == "group") {
+                val ref = FirebaseDatabase.getInstance().getReference("groups/$groupID/group-details")
+                ref.addListenerForSingleValueEvent(object: ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        group = snapshot.getValue(Group::class.java)
+                        viewHolder.itemView.latest_message_username.text = group?.GroupName
 
-            val groupID: String = groupMessage.groupID
+                        val targetImage = viewHolder.itemView.latest_message_user_picture
+                        Picasso.get().load(group?.GroupImageURI).into(targetImage)
+                    }
 
-            val ref = FirebaseDatabase.getInstance().getReference("groups/$groupID/group-details")
-            ref.addListenerForSingleValueEvent(object: ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    group = snapshot.getValue(Group::class.java)
-                    viewHolder.itemView.latest_message_username.text = group?.GroupName
+                    override fun onCancelled(error: DatabaseError) {
+                        // Nada
+                    }
 
-                    val targetImage = viewHolder.itemView.latest_message_user_picture
-                    Picasso.get().load(group?.GroupImageURI).into(targetImage)
-                }
+                })
 
-                override fun onCancelled(error: DatabaseError) {
-                    // Nada
-                }
-
-            })
-
-            val membersReference = FirebaseDatabase.getInstance().getReference("groups/$groupID/members")
-            membersReference.addListenerForSingleValueEvent(object: ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    snapshot.children.forEach {
-                        val groupMember = it.getValue(GroupMember::class.java)
-                        if (groupMember != null && groupMember.memberStatus == "active") {
-                            toUsers[groupMember.uid] = groupMember
-                            uidList.add(groupMember.uid)
+                val membersReference = FirebaseDatabase.getInstance().getReference("groups/$groupID/members")
+                membersReference.addListenerForSingleValueEvent(object: ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        snapshot.children.forEach {
+                            val groupMember = it.getValue(GroupMember::class.java)
+                            if (groupMember != null && groupMember.memberStatus == "active") {
+                                toUsers[groupMember.uid] = groupMember
+                                uidList.add(groupMember.uid)
+                            }
                         }
                     }
-                }
 
-                override fun onCancelled(error: DatabaseError) {
-                    // Nada
-                }
-            })
+                    override fun onCancelled(error: DatabaseError) {
+                        // Nada
+                    }
+                })
+            }
         }
 
         override fun getLayout(): Int {
             return R.layout.latest_message_row
         }
-
     }
 
     private fun retrieveCurrentUser() {

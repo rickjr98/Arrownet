@@ -35,12 +35,25 @@ class ChatsFragment : Fragment() {
         listenForLatestMessages()
 
         adapter.setOnItemClickListener { item, view ->
-            val intent = Intent(view.context, ChatLogActivity::class.java)
             val row = item as HomePage.LatestMessageRow
-            intent.putExtra(NewMessageActivity.USER_KEY, row.chatPartnerUser)
-            intent.putExtra(NewMessageActivity.NAME_KEY, row.name)
-            startActivity(intent)
-            activity?.finish()
+            if(row.chatType == "chat") {
+                val intent = Intent(view.context, ChatLogActivity::class.java)
+                intent.putExtra(NewMessageActivity.USER_KEY, row.chatPartnerUser)
+                intent.putExtra(NewMessageActivity.NAME_KEY, row.name)
+                startActivity(intent)
+                activity?.finish()
+            }
+            else if(row.chatType == "group") {
+                val intent = Intent(view.context, GroupChatLogActivity::class.java)
+                intent.putExtra("GroupName", row.group?.GroupName)
+                intent.putExtra("ImageKey", row.group?.GroupImageURI)
+                intent.putExtra("ContactsList", contactsList)
+                intent.putExtra("GroupID", row.group?.GroupID)
+                intent.putExtra("UidList", row.uidList)
+                intent.putExtra("toUsers", row.toUsers)
+                startActivity(intent)
+                activity?.finish()
+            }
         }
     }
 

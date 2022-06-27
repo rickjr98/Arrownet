@@ -287,8 +287,8 @@ class ChatLogActivity : AppCompatActivity() {
         })
     }
 
-    class ChatMessage(val id: String, val text: String, val fromID: String, val toID: String, var translatedMessage: String, val type: String, val imageUri: String, val timestamp: Long) {
-        constructor() : this("", "", "", "", "", "", "", -1)
+    class ChatMessage(val id: String, val text: String, val fromID: String, val toID: String, var translatedMessage: String, val type: String, val imageUri: String, val timestamp: Long, val chatType: String) {
+        constructor() : this("", "", "", "", "", "", "", -1, "")
     }
 
     private fun sendMessage() {
@@ -304,7 +304,7 @@ class ChatLogActivity : AppCompatActivity() {
         val toReference = FirebaseDatabase.getInstance().getReference("messages/$toID/$fromID").push()
 
         if(text.isNotEmpty() && image_preview.isVisible) {
-            val chatMessage = ChatMessage(reference.key!!, text, fromID, toID, "", "text", "", System.currentTimeMillis())
+            val chatMessage = ChatMessage(reference.key!!, text, fromID, toID, "", "text", "", System.currentTimeMillis(), "chat")
             reference.setValue(chatMessage).addOnSuccessListener {
                 newMessageText.text.clear()
                 recyclerview_chat.scrollToPosition(adapter.itemCount - 1)
@@ -329,7 +329,7 @@ class ChatLogActivity : AppCompatActivity() {
 
                     ref.downloadUrl.addOnSuccessListener {
                         Log.d("RegisterActivity","File Location: $it")
-                        val chatMessage = ChatMessage(reference.key!!, "", fromID, toID, "", "image", it.toString(), System.currentTimeMillis())
+                        val chatMessage = ChatMessage(reference.key!!, "", fromID, toID, "", "image", it.toString(), System.currentTimeMillis(), "chat")
                         reference.setValue(chatMessage).addOnSuccessListener {
                             image_preview.visibility = View.GONE
                             recyclerview_chat.scrollToPosition(adapter.itemCount - 1)
@@ -341,7 +341,7 @@ class ChatLogActivity : AppCompatActivity() {
                 }
         }
         else if(text.isNotEmpty()) {
-            val chatMessage = ChatMessage(reference.key!!, text, fromID, toID, "", "text", "", System.currentTimeMillis())
+            val chatMessage = ChatMessage(reference.key!!, text, fromID, toID, "", "text", "", System.currentTimeMillis(), "chat")
             reference.setValue(chatMessage).addOnSuccessListener {
                 newMessageText.text.clear()
                 recyclerview_chat.scrollToPosition(adapter.itemCount - 1)
@@ -367,7 +367,7 @@ class ChatLogActivity : AppCompatActivity() {
 
                     ref.downloadUrl.addOnSuccessListener {
                         Log.d("RegisterActivity","File Location: $it")
-                        val chatMessage = ChatMessage(reference.key!!, "", fromID, toID, "", "image", it.toString(), System.currentTimeMillis())
+                        val chatMessage = ChatMessage(reference.key!!, "", fromID, toID, "", "image", it.toString(), System.currentTimeMillis(), "chat")
                         reference.setValue(chatMessage).addOnSuccessListener {
                             image_preview.visibility = View.GONE
                             recyclerview_chat.scrollToPosition(adapter.itemCount - 1)
