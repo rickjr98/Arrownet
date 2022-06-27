@@ -46,12 +46,14 @@ class HomePage : AppCompatActivity() {
             val intent = Intent(this, NewMessageActivity::class.java)
             intent.putExtra("ContactsList", contactsList)
             startActivity(intent)
+            finish()
         }
 
         newGroupButton.setOnClickListener {
             val intent = Intent(this, GroupChatActivity::class.java)
             intent.putExtra("ContactsList", contactsList)
             startActivity(intent)
+            finish()
         }
     }
 
@@ -151,7 +153,7 @@ class HomePage : AppCompatActivity() {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     snapshot.children.forEach {
                         val groupMember = it.getValue(GroupMember::class.java)
-                        if (groupMember != null) {
+                        if (groupMember != null && groupMember.memberStatus == "active") {
                             toUsers[groupMember.uid] = groupMember
                             uidList.add(groupMember.uid)
                         }

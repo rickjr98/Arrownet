@@ -16,15 +16,16 @@
         app:layout_constraintTop_toTopOf="parent"
         android:src="@drawable/blank_profile" />
 
-    <TextView
+    <EditText
         android:id="@+id/group_info_name"
-        android:layout_width="wrap_content"
+        android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
         android:text="TextView"
         android:textColor="#000000"
         android:textSize="20sp"
         android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/group_info_photo"
         app:layout_constraintStart_toEndOf="@+id/group_info_photo"
         app:layout_constraintTop_toTopOf="@+id/group_info_photo" />
 
@@ -33,6 +34,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="50dp"
+        android:overScrollMode="never"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -44,7 +46,21 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:text="Add New Members"
+        android:background="@drawable/rounded_corners"
         app:layout_constraintEnd_toEndOf="@+id/group_info_member_list"
         app:layout_constraintStart_toStartOf="@+id/group_info_member_list"
         app:layout_constraintTop_toBottomOf="@+id/group_info_member_list" />
+
+    <Button
+        android:id="@+id/delete_group_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:background="@drawable/rounded_corners"
+        android:text="Leave Group"
+        app:backgroundTint="#FF0000"
+        app:layout_constraintEnd_toEndOf="@+id/add_participants"
+        app:layout_constraintStart_toStartOf="@+id/add_participants"
+        app:layout_constraintTop_toBottomOf="@+id/add_participants" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

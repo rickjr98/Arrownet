@@ -71,7 +71,7 @@ class GroupChatLogActivity : AppCompatActivity() {
         val name = intent.getStringExtra("GroupName")
         val image = intent.getStringExtra("ImageKey")
         groupID = intent.getStringExtra("GroupID").toString()
-        contactsList = HomePage.contactsList
+        contactsList = intent.getSerializableExtra("ContactsList") as HashMap<String, String>
         uidList = (intent.getSerializableExtra("UidList") as ArrayList<String>)
         toUsers = intent.getSerializableExtra("toUsers") as HashMap<String, GroupMember>
 
@@ -148,6 +148,7 @@ class GroupChatLogActivity : AppCompatActivity() {
             intent.putExtra("UidList", uidList)
             intent.putExtra("GroupID", groupID)
             startActivity(intent)
+            finish()
         }
     }
 

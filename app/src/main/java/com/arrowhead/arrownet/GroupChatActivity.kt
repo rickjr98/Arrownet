@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.*
 import android.widget.Toast
+import androidx.appcompat.app.ActionBar
 import androidx.recyclerview.widget.DividerItemDecoration
 import com.google.firebase.database.*
 import com.squareup.picasso.Picasso
@@ -13,6 +14,8 @@ import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.activity_group_chat.*
+import kotlinx.android.synthetic.main.group_info_toolbar.*
+import kotlinx.android.synthetic.main.new_group_toolbar.*
 import kotlinx.android.synthetic.main.user_row.view.*
 
 class GroupChatActivity : AppCompatActivity() {
@@ -24,11 +27,19 @@ class GroupChatActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_group_chat)
 
-        supportActionBar?.title = "Select Users"
+        supportActionBar?.displayOptions = ActionBar.DISPLAY_SHOW_CUSTOM
+        supportActionBar?.setCustomView(R.layout.new_group_toolbar)
+        select_users_title.text = "Select Users"
 
         mDatabase = FirebaseDatabase.getInstance().getReference("users")
 
         contactsList = intent.getSerializableExtra("ContactsList") as HashMap<String, String>
+
+        new_group_back_button.setOnClickListener {
+            val intent = Intent(this, HomePage::class.java)
+            startActivity(intent)
+            finish()
+        }
 
         selectGroupUsers()
     }

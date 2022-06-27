@@ -36,4 +36,5 @@
         android:text="TextView"
         app:layout_constraintBottom_toBottomOf="@+id/group_info_member_image"
         app:layout_constraintStart_toStartOf="@+id/group_info_member_name" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
