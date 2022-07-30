@@ -287,10 +287,6 @@ class ChatLogActivity : AppCompatActivity() {
         })
     }
 
-    class ChatMessage(val id: String, val text: String, val fromID: String, val toID: String, var translatedMessage: String, val type: String, val imageUri: String, val timestamp: Long, val chatType: String) {
-        constructor() : this("", "", "", "", "", "", "", -1, "")
-    }
-
     private fun sendMessage() {
         val text = newMessageText.text.toString()
         val fromID = FirebaseAuth.getInstance().uid
@@ -495,7 +491,7 @@ class ChatLogActivity : AppCompatActivity() {
     }
 }
 
-class ChatFromItem(val text: String, private val user: User, val timestamp: Long): Item<ViewHolder>() {
+class ChatFromItem(val text: String, private val user: User, private val timestamp: Long): Item<ViewHolder>() {
     override fun bind(viewHolder: ViewHolder, position: Int) {
         viewHolder.itemView.userFromText.text = text
 
@@ -559,4 +555,8 @@ class ChatFromImageItem(private val imageUri: String, private val user: User, pr
     override fun getLayout(): Int {
         return R.layout.chat_from_image
     }
+}
+
+class ChatMessage(val id: String, val text: String, val fromID: String, val toID: String, var translatedMessage: String, val type: String, val imageUri: String, val timestamp: Long, val chatType: String) {
+    constructor() : this("", "", "", "", "", "", "", -1, "")
 }

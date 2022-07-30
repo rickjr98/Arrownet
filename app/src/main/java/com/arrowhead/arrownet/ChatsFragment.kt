@@ -23,10 +23,12 @@ import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.activity_home_page.*
 import kotlinx.android.synthetic.main.fragment_chats.*
+import java.lang.reflect.Array
+import java.util.ArrayList
 
 class ChatsFragment : Fragment() {
     private var contactsList = HashMap<String, String>()
-    val latestMessagesMap = HashMap<String, ChatLogActivity.ChatMessage>()
+    val latestMessagesMap = HashMap<String, ChatMessage>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -73,7 +75,8 @@ class ChatsFragment : Fragment() {
 
     private fun refreshMessages() {
         adapter.clear()
-        latestMessagesMap.values.forEach {
+        val sortedHashMap = latestMessagesMap.toList().sortedByDescending { (_, v) -> v.timestamp }.toMap()
+        sortedHashMap.values.forEach {
             adapter.add(HomePage.LatestMessageRow(it, contactsList))
         }
     }
@@ -83,13 +86,13 @@ class ChatsFragment : Fragment() {
         val ref = FirebaseDatabase.getInstance().getReference("latest-messages/$fromID")
         ref.addChildEventListener(object: ChildEventListener {
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
-                val chatMessage = snapshot.getValue(ChatLogActivity.ChatMessage::class.java) ?: return
+                val chatMessage = snapshot.getValue(ChatMessage::class.java) ?: return
                 latestMessagesMap[snapshot.key!!] = chatMessage
                 refreshMessages()
             }
 
             override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
-                val chatMessage = snapshot.getValue(ChatLogActivity.ChatMessage::class.java) ?: return
+                val chatMessage = snapshot.getValue(ChatMessage::class.java) ?: return
                 latestMessagesMap[snapshot.key!!] = chatMessage
                 refreshMessages()
             }

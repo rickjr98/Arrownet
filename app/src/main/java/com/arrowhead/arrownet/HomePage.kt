@@ -68,7 +68,7 @@ class HomePage : AppCompatActivity() {
         }
     }
 
-    class LatestMessageRow(private val chatMessage: ChatLogActivity.ChatMessage, private val contacts: HashMap<String, String>): Item<ViewHolder>() {
+    class LatestMessageRow(private val chatMessage: ChatMessage, private val contacts: HashMap<String, String>): Item<ViewHolder>() {
         var chatPartnerUser: User? = null
         lateinit var name: String
         val chatType = chatMessage.chatType

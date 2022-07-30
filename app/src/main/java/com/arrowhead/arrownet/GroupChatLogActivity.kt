@@ -251,7 +251,7 @@ class GroupChatLogActivity : AppCompatActivity() {
         val reference = FirebaseDatabase.getInstance().getReference("groups/$groupID/messages/$fromID").push()
 
         if(text.isNotEmpty() && group_image_message_preview.isVisible) {
-            val groupChatMessage = ChatLogActivity.ChatMessage(reference.key!!, text, fromID!!, groupID, "", "text", "", System.currentTimeMillis(), "group")
+            val groupChatMessage = ChatMessage(reference.key!!, text, fromID!!, groupID, "", "text", "", System.currentTimeMillis(), "group")
             reference.setValue(groupChatMessage).addOnSuccessListener {
                 group_chat_text.text.clear()
                 group_chat_recyclerview.scrollToPosition(adapter.itemCount - 1)
@@ -281,7 +281,7 @@ class GroupChatLogActivity : AppCompatActivity() {
 
                     ref.downloadUrl.addOnSuccessListener {
                         Log.d("RegisterActivity","File Location: $it")
-                        val groupChatMessage = ChatLogActivity.ChatMessage(reference.key!!, "", fromID, groupID, "", "image", it.toString(), System.currentTimeMillis(), "group")
+                        val groupChatMessage = ChatMessage(reference.key!!, "", fromID, groupID, "", "image", it.toString(), System.currentTimeMillis(), "group")
                         reference.setValue(groupChatMessage).addOnSuccessListener {
                             image_preview.visibility = View.GONE
                             recyclerview_chat.scrollToPosition(adapter.itemCount - 1)
@@ -301,7 +301,7 @@ class GroupChatLogActivity : AppCompatActivity() {
                 }
         }
         else if(text.isNotEmpty()) {
-            val groupChatMessage = ChatLogActivity.ChatMessage(reference.key!!, text, fromID!!, groupID, "", "text", "", System.currentTimeMillis(), "group")
+            val groupChatMessage = ChatMessage(reference.key!!, text, fromID!!, groupID, "", "text", "", System.currentTimeMillis(), "group")
             reference.setValue(groupChatMessage).addOnSuccessListener {
                 group_chat_text.text.clear()
                 group_chat_recyclerview.scrollToPosition(adapter.itemCount - 1)
@@ -334,7 +334,7 @@ class GroupChatLogActivity : AppCompatActivity() {
 
                     ref.downloadUrl.addOnSuccessListener {
                         Log.d("RegisterActivity","File Location: $it")
-                        val groupChatMessage = ChatLogActivity.ChatMessage(reference.key!!, "", fromID!!, groupID, "", "image", it.toString(), System.currentTimeMillis(), "group")
+                        val groupChatMessage = ChatMessage(reference.key!!, "", fromID!!, groupID, "", "image", it.toString(), System.currentTimeMillis(), "group")
                         reference.setValue(groupChatMessage).addOnSuccessListener {
                             group_image_message_preview.visibility = View.GONE
                             group_chat_recyclerview.scrollToPosition(adapter.itemCount - 1)
@@ -366,7 +366,7 @@ class GroupChatLogActivity : AppCompatActivity() {
         ref.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 snapshot.children.forEach {
-                    val chatMessage = it.getValue(ChatLogActivity.ChatMessage::class.java)
+                    val chatMessage = it.getValue(ChatMessage::class.java)
                     val key = it.key.toString()
 
                     if (chatMessage != null) {
@@ -425,7 +425,7 @@ class GroupChatLogActivity : AppCompatActivity() {
             override fun onDataChange(snapshot: DataSnapshot) {
                 adapter.clear()
                 snapshot.children.forEach {
-                    val chatMessage = it.getValue(ChatLogActivity.ChatMessage::class.java)
+                    val chatMessage = it.getValue(ChatMessage::class.java)
 
                     if (chatMessage != null) {
                         if (chatMessage.fromID == FirebaseAuth.getInstance().uid) {
@@ -481,7 +481,7 @@ class GroupChatLogActivity : AppCompatActivity() {
 
         reference.addChildEventListener(object: ChildEventListener {
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
-                val chatMessage = snapshot.getValue(ChatLogActivity.ChatMessage::class.java)
+                val chatMessage = snapshot.getValue(ChatMessage::class.java)
 
                 if (chatMessage != null) {
                     translateText()
@@ -517,7 +517,7 @@ class GroupChatLogActivity : AppCompatActivity() {
             }
 
             override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
-                val changedChatMessage = snapshot.getValue(ChatLogActivity.ChatMessage::class.java)
+                val changedChatMessage = snapshot.getValue(ChatMessage::class.java)
 
                 if(changedChatMessage != null) {
                     if (checkTranslatedMessage) {
